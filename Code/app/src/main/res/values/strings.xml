@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Entity Marking</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="select_city_activity_label">Select City</string>
+    <string name="sikar_btn_label">Sikar</string>
+    <string name="reengus_btn_label">Reengus</string>
+    <string name="slct_wrd_activity_label">Select Ward</string>
+    <string name="already_installed_cb_text">पहले ही कार्ड का सर्वेक्षण किया जा चुका है</string>
+</resources>
+

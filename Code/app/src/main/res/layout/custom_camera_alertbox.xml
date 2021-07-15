@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:id="@+id/layout"
+    android:layout_height="wrap_content"
+    android:weightSum="100"
+    android:paddingTop="100dp"
+    android:paddingBottom="100dp"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/top_corner"
+        android:text="Capture Photo"
+        android:gravity="center"
+        android:textColor="@color/black"
+        android:textSize="18dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="8dp"
+        android:paddingRight="16dp"
+        android:paddingLeft="16dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="100"
+        android:background="#fff">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:padding="2dp"
+            android:background="@drawable/view_border">
+
+            <SurfaceView
+                android:id="@+id/surfaceViews"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="100"
+        android:background="@drawable/lower_corner"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="25dp">
+
+        <Button
+            android:id="@+id/close_image_btn"
+            android:layout_width="0dp"
+            android:layout_height="45dp"
+            android:layout_weight="50"
+            android:background="@drawable/cancel_btn_background"
+            android:textColor="@color/colorAccent"
+            android:text="Cancel"
+            android:textSize="16sp"
+            android:textAllCaps="false"
+            android:layout_marginRight="8dp"/>
+
+        <Button
+            android:id="@+id/capture_image_btn"
+            android:layout_width="0dp"
+            android:layout_height="45dp"
+            android:layout_weight="50"
+            android:textColor="#fff"
+            android:textSize="16sp"
+            android:layout_marginLeft="8dp"
+            android:background="@drawable/capture_btn_background"
+            android:textAllCaps="false"
+            android:text="Capture" />
+    </LinearLayout>
+
+</LinearLayout>
