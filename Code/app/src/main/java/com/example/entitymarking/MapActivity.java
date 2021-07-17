@@ -102,7 +102,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     Bitmap photo;
     GoogleMap mMap;
     LocationCallback locationCallback;
-    LatLng firstLatLng = null, lastKnownLatLngForWalkingMan = null;
+    LatLng lastKnownLatLngForWalkingMan = null;
     Marker manMarker;
     DatabaseReference rootRef;
     JSONObject wardJSONObject;
@@ -152,7 +152,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (selectedWard != null) {
             common.setProgressDialog("Please Wait", "", MapActivity.this, MapActivity.this);
             setPageTitle();
-            new Thread(this::fetchMarkedSurveyData).start();
             runOnUiThread(this::fetchHouseTypes);
             fetchWardJson();
         }
@@ -174,89 +173,93 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         toolbar.setNavigationOnClickListener(v -> MapActivity.this.onBackPressed());
     }
 
-    private void fetchMarkedSurveyData() {
+    private void fetchMarkedSurveyData(Location finalLocation) {
+        common.setProgressDialog("Saving", "", MapActivity.this, MapActivity.this);
         rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/" + userId + "/").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.getValue() != null) {
                     EMPLOYEE_DATEWISE_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
                 }
+                rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/totalCount/").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.getValue() != null) {
+                            EMPLOYEE_DATEWISE_TOTAL_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
+                        }
+                        rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/EmployeeWise/" + userId + "/").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                if (snapshot.getValue() != null) {
+                                    EMPLOYEE_TOTAL_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
+                                }
+                                rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/" + selectedWard + "/").addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                        if (snapshot.getValue() != null) {
+                                            WARD_DATEWISE_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
+                                        }
+                                        rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/totalCount/").addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                if (snapshot.getValue() != null) {
+                                                    WARD_DATEWISE_TOTAL_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
+                                                }
+                                                rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard + "/").addListenerForSingleValueEvent(new ValueEventListener() {
+                                                    @Override
+                                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                        if (snapshot.getValue() != null) {
+                                                            WARD_TOTAL_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
+                                                        }
+                                                        Log.d(TAG, "onDataChange: "+WARD_TOTAL_COUNT+" "+WARD_DATEWISE_TOTAL_COUNT+" "+WARD_DATEWISE_COUNT+" "+EMPLOYEE_TOTAL_COUNT
+                                                                +" "+EMPLOYEE_DATEWISE_TOTAL_COUNT+" "+EMPLOYEE_DATEWISE_COUNT);
+                                                        saveMarkedLocationAndUploadPhoto(finalLocation);
+
+                                                    }
+
+                                                    @Override
+                                                    public void onCancelled(@NonNull DatabaseError error) {
+
+                                                    }
+                                                });
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError error) {
+
+                                            }
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-            }
-        });
-        rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/totalCount/").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.getValue() != null) {
-                    EMPLOYEE_DATEWISE_TOTAL_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-        rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/EmployeeWise/" + userId + "/").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.getValue() != null) {
-                    EMPLOYEE_TOTAL_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-        rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/" + selectedWard + "/").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.getValue() != null) {
-                    WARD_DATEWISE_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-        rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/totalCount/").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.getValue() != null) {
-                    WARD_DATEWISE_TOTAL_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-        rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard + "/").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.getValue() != null) {
-                    WARD_TOTAL_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
             }
         });
     }
 
     private void fetchHouseTypes() {
-        rootRef.child("Defaults/HouseTypes").addListenerForSingleValueEvent(new ValueEventListener() {
+        rootRef.child("Defaults/FinalHousesType").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.getValue() != null) {
@@ -483,7 +486,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
                         builder.setMessage("Data Collected successfully.Proceed to Save.").setCancelable(false)
                                 .setPositiveButton("Proceed", (dialog, id) -> {
-                                    saveMarkedLocationAndUploadPhoto(finalLocation);
+                                    fetchMarkedSurveyData(finalLocation);
                                     dialog.cancel();
                                 })
                                 .setNegativeButton("Cancel", (dialog, i) -> dialog.cancel());
@@ -503,7 +506,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @SuppressLint("SimpleDateFormat")
     private void saveMarkedLocationAndUploadPhoto(Location loc) {
         if (MARKS_COUNT != 0) {
-            common.setProgressDialog("Saving", "", MapActivity.this, MapActivity.this);
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference stoRef = storage.getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + selectedCity);
             ByteArrayOutputStream toUpload = new ByteArrayOutputStream();
@@ -601,6 +603,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
         } else {
+            common.closeDialog(MapActivity.this);
             common.showAlertBox("please Retry", "Ok", "", MapActivity.this);
         }
     }
@@ -644,7 +647,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @SuppressLint("SetTextI18n")
     private void drawLine() {
         mMap.clear();
-        firstLatLng = dbColl.get(currentLineNumber).get(0);
         currentLineTv.setText("" + (currentLineNumber + 1) + " / " + dbColl.size());
         mMap.addPolyline(new PolylineOptions().addAll(dbColl.get(currentLineNumber))
                 .startCap(new RoundCap())
@@ -690,7 +692,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         } else {
         }
     };
-
 
     private Rect calculateFocusArea(float x, float y) {
         int left = clamp(Float.valueOf((x / surfaceView.getWidth()) * 2000 - 1000).intValue(), FOCUS_AREA_SIZE);
