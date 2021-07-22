@@ -3,12 +3,10 @@ package com.example.entitymarking;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
@@ -17,10 +15,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.ApiException;
@@ -30,13 +25,18 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.util.Locale;
-import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     SharedPreferences dbPathSP;
+    String userId, assignedWard;
+    DatabaseReference rootRef;
     CommonFunctions cmn = new CommonFunctions();
 
     @Override
@@ -44,11 +44,22 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         dbPathSP = getSharedPreferences("LoginDetails", MODE_PRIVATE);
-        checkInternet();
+        checkAlreadyLoggedIn();
+    }
+
+    private void checkAlreadyLoggedIn() {
+        userId = dbPathSP.getString("userId", null);
+        if (userId != null) {
+            if (!userId.equals("0")) {
+                checkInternet();
+                return;
+            }
+        }
+        checkWhetherLocationSettingsAreSatisfied();
     }
 
     @SuppressLint("StaticFieldLeak")
-    private void checkInternet(){
+    private void checkInternet() {
         new AsyncTask<Void, Void, Boolean>() {
             @Override
             protected void onPreExecute() {
@@ -63,7 +74,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected void onPostExecute(Boolean result) {
                 if (result) {
-                    checkWhetherLocationSettingsAreSatisfied();
+                    checkIsActive();
+
                 } else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setMessage("Please Connect to internet").setCancelable(false)
@@ -95,13 +107,9 @@ public class MainActivity extends AppCompatActivity {
             dbPath = "https://dtdnavigator.firebaseio.com/";
             storagePath = "Sikar";
         }
-
         dbPathSP.edit().putString("dbPath", dbPath).apply();
         dbPathSP.edit().putString("storagePath", storagePath).apply();
-        Intent i = new Intent(MainActivity.this, LoginActivity.class);
-        cmn.closeDialog(MainActivity.this);
-        startActivity(i);
-        finish();
+        loginIntent();
     }
 
     private void checkWhetherLocationSettingsAreSatisfied() {
@@ -111,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
                     .setAlwaysShow(true).setNeedBle(true).build()).addOnCompleteListener(task1 -> {
                 try {
                     task1.getResult(ApiException.class);
-                    if (task1.isSuccessful()){
+                    if (task1.isSuccessful()) {
                         getLocation();
                     }
                 } catch (ApiException e) {
@@ -146,7 +154,6 @@ public class MainActivity extends AppCompatActivity {
                                         .get(0)
                                         .getLocality());
 
-                                Log.d("TAG", "onLocationResult: "+address);
                                 if (address != null) {
                                     switch (address.toLowerCase()) {
                                         case "jaipur":
@@ -159,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
                                             setDatabasePath("reengus");
                                             break;
                                         default:
-                                            cmn.showAlertBox("Please Restart Application","Ok","",MainActivity.this);
+                                            cmn.showAlertBox("Please Restart Application", "Ok", "", MainActivity.this);
                                             break;
                                     }
 
@@ -189,6 +196,7 @@ public class MainActivity extends AppCompatActivity {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 MainActivity.this.checkWhetherLocationSettingsAreSatisfied();
             } else {
+                finish();
                 Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
             }
         }
@@ -201,9 +209,99 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 getLocation();
             } else {
+                finish();
                 Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
             }
         }
 
     }
+
+    private void checkIsActive() {
+        try {
+            rootRef = cmn.getDatabaseRef(this);
+            rootRef.child("EntityMarkingData/MarkerAppAccess/" + userId + "/isActive/")
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.getValue() != null) {
+                                if (Boolean.parseBoolean(String.valueOf(snapshot.getValue()))) {
+                                    checkAssignedWard();
+                                    return;
+                                }
+                            }
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                            builder.setMessage("Access Denied").setCancelable(false)
+                                    .setPositiveButton("ok", (dialog, id) -> {
+                                        finish();
+                                        dialog.cancel();
+                                    })
+                                    .setNegativeButton("", (dialog, i) -> finish());
+                            AlertDialog alertDialog = builder.create();
+                            alertDialog.show();
+
+
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void checkAssignedWard() {
+        try {
+            rootRef.child("EntityMarkingData/MarkerAppAccess/" + userId + "/assignedWard/")
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.getValue() != null) {
+                                assignedWard = dbPathSP.getString("assignment", "null");
+                                if (assignedWard != null) {
+                                    if (!assignedWard.equals(String.valueOf(snapshot.getValue()))) {
+                                        dbPathSP.edit().putString("assignment", String.valueOf(snapshot.getValue())).apply();
+                                    }
+                                    mapIntent();
+                                }
+                            } else {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                                builder.setMessage("No work assigned").setCancelable(false)
+                                        .setPositiveButton("ok", (dialog, id) -> {
+                                            finish();
+                                            dialog.cancel();
+                                        })
+                                        .setNegativeButton("", (dialog, i) -> finish());
+                                AlertDialog alertDialog = builder.create();
+                                alertDialog.show();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void loginIntent() {
+        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    private void mapIntent() {
+        Intent intent = new Intent(MainActivity.this, MapActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
 }

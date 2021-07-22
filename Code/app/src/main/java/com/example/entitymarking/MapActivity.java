@@ -1,6 +1,7 @@
 package com.example.entitymarking;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -28,6 +29,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -37,6 +40,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -61,6 +65,9 @@ import com.google.android.gms.maps.model.RoundCap;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.ServerValue;
+import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -89,12 +96,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     String selectedWard = null, selectedCity, userId, date, cbText;
     double lat, lng;
     int currentLineNumber = 0,                      // use + 1 to get currentLine
-            EMPLOYEE_DATEWISE_COUNT = 0,
-            EMPLOYEE_DATEWISE_TOTAL_COUNT = 0,
-            EMPLOYEE_TOTAL_COUNT = 0,
-            WARD_DATEWISE_COUNT = 0,
-            WARD_DATEWISE_TOTAL_COUNT = 0,
-            WARD_TOTAL_COUNT = 0,
             MARKS_COUNT = 0;
     Spinner houseTypeSpinner;
     TextView currentLineTv, totalMarksTv;
@@ -105,6 +106,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     LatLng lastKnownLatLngForWalkingMan = null;
     Marker manMarker;
     DatabaseReference rootRef;
+    SharedPreferences preferences;
     JSONObject wardJSONObject;
     List<List<LatLng>> dbColl = new ArrayList<>();
     List<String> houseList = new ArrayList<>();
@@ -143,8 +145,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         alreadyInstalledCb = findViewById(R.id.already_installed_cb);
         date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
-        SharedPreferences preferences = getSharedPreferences("LoginDetails", MODE_PRIVATE);
-        selectedWard = getIntent().getStringExtra("ward");
+        preferences = getSharedPreferences("LoginDetails", MODE_PRIVATE);
+        selectedWard = preferences.getString("assignment", null);
         selectedCity = preferences.getString("storagePath", "");
         userId = preferences.getString("userId", "");
         cbText = preferences.getString("alreadyInstalledCheckBoxText", getResources().getString(R.string.already_installed_cb_text));
@@ -171,91 +173,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
         toolbar.setNavigationOnClickListener(v -> MapActivity.this.onBackPressed());
-    }
-
-    private void fetchMarkedSurveyData(Location finalLocation) {
-        common.setProgressDialog("Saving", "", MapActivity.this, MapActivity.this);
-        rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/" + userId + "/").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.getValue() != null) {
-                    EMPLOYEE_DATEWISE_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
-                }
-                rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/totalCount/").addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.getValue() != null) {
-                            EMPLOYEE_DATEWISE_TOTAL_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
-                        }
-                        rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/EmployeeWise/" + userId + "/").addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                if (snapshot.getValue() != null) {
-                                    EMPLOYEE_TOTAL_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
-                                }
-                                rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/" + selectedWard + "/").addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                        if (snapshot.getValue() != null) {
-                                            WARD_DATEWISE_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
-                                        }
-                                        rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/totalCount/").addListenerForSingleValueEvent(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                if (snapshot.getValue() != null) {
-                                                    WARD_DATEWISE_TOTAL_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
-                                                }
-                                                rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard + "/").addListenerForSingleValueEvent(new ValueEventListener() {
-                                                    @Override
-                                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                        if (snapshot.getValue() != null) {
-                                                            WARD_TOTAL_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
-                                                        }
-                                                        Log.d(TAG, "onDataChange: "+WARD_TOTAL_COUNT+" "+WARD_DATEWISE_TOTAL_COUNT+" "+WARD_DATEWISE_COUNT+" "+EMPLOYEE_TOTAL_COUNT
-                                                                +" "+EMPLOYEE_DATEWISE_TOTAL_COUNT+" "+EMPLOYEE_DATEWISE_COUNT);
-                                                        saveMarkedLocationAndUploadPhoto(finalLocation);
-
-                                                    }
-
-                                                    @Override
-                                                    public void onCancelled(@NonNull DatabaseError error) {
-
-                                                    }
-                                                });
-                                            }
-
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError error) {
-
-                                            }
-                                        });
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError error) {
-
-                                    }
-                                });
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-            }
-        });
     }
 
     private void fetchHouseTypes() {
@@ -332,7 +249,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 AlertDialog alertDialog = builder.create();
                 alertDialog.show();
             });
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -424,7 +341,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 .setAlwaysShow(true).setNeedBle(true).build()).addOnCompleteListener(task1 -> {
             try {
                 task1.getResult(ApiException.class);
-                if (task1.isSuccessful()){
+                if (task1.isSuccessful()) {
                     openCam();
                 }
             } catch (ApiException e) {
@@ -486,7 +403,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
                         builder.setMessage("Data Collected successfully.Proceed to Save.").setCancelable(false)
                                 .setPositiveButton("Proceed", (dialog, id) -> {
-                                    fetchMarkedSurveyData(finalLocation);
+                                    common.setProgressDialog("Saving", "", MapActivity.this, MapActivity.this);
+                                    saveMarkedLocationAndUploadPhoto(finalLocation);
                                     dialog.cancel();
                                 })
                                 .setNegativeButton("Cancel", (dialog, i) -> dialog.cancel());
@@ -521,67 +439,138 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             hM.put("image", date + "-" + MARKS_COUNT + ".jpg");
                             hM.put("date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
                             hM.put("houseType", houseDataHashMap.get(houseTypeSpinner.getSelectedItem()));
+
                             rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT).setValue(hM)
                                     .addOnCompleteListener(task -> {
                                         if (task.isSuccessful()) {
                                             rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1) + "/marksCount").setValue(MARKS_COUNT)
                                                     .addOnCompleteListener(task1 -> {
                                                         if (task1.isSuccessful()) {
-                                                            rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/" + userId).setValue(++EMPLOYEE_DATEWISE_COUNT)
-                                                                    .addOnCompleteListener(task2 -> {
-                                                                        if (task2.isSuccessful()) {
-                                                                            rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/totalCount").setValue(++EMPLOYEE_DATEWISE_TOTAL_COUNT)
-                                                                                    .addOnCompleteListener(task3 -> {
-                                                                                        if (task3.isSuccessful()) {
-                                                                                            rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/EmployeeWise/" + userId).setValue(++EMPLOYEE_TOTAL_COUNT)
-                                                                                                    .addOnCompleteListener(task31 -> {
-                                                                                                        if (task31.isSuccessful()) {
-                                                                                                            rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/" + selectedWard).setValue(++WARD_DATEWISE_COUNT)
-                                                                                                                    .addOnCompleteListener(task4 -> {
-                                                                                                                        if (task4.isSuccessful()) {
-                                                                                                                            rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/totalCount").setValue(++WARD_DATEWISE_TOTAL_COUNT)
-                                                                                                                                    .addOnCompleteListener(task5 -> {
-                                                                                                                                        if (task5.isSuccessful()) {
-                                                                                                                                            rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard).setValue(++WARD_TOTAL_COUNT)
-                                                                                                                                                    .addOnCompleteListener(task6 -> {
-                                                                                                                                                        if (task6.isSuccessful()) {
-                                                                                                                                                            houseTypeSpinner.setSelection(0);
-                                                                                                                                                            totalMarksTv.setText("" + MARKS_COUNT);
-                                                                                                                                                            MARKS_COUNT = 0;
-                                                                                                                                                            alreadyInstalledCb.setChecked(false);
-                                                                                                                                                            common.closeDialog(MapActivity.this);
-                                                                                                                                                            addMarkerForEntity(new LatLng(loc.getLatitude(), loc.getLongitude()));
-                                                                                                                                                        } else {
-                                                                                                                                                            common.closeDialog(MapActivity.this);
-                                                                                                                                                            common.showAlertBox("Please Retry", "Ok", "", MapActivity.this);
+                                                            rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/" + userId)
+                                                                    .runTransaction(new Transaction.Handler() {
+                                                                        @NonNull
+                                                                        @Override
+                                                                        public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                                                            if (currentData.getValue() == null) {
+                                                                                currentData.setValue(1);
+                                                                            } else {
+                                                                                currentData.setValue((Long) currentData.getValue() + 1);
+                                                                            }
+                                                                            return Transaction.success(currentData);
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                                                                            if (error == null) {
+                                                                                rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/totalCount")
+                                                                                        .runTransaction(new Transaction.Handler() {
+                                                                                            @NonNull
+                                                                                            @Override
+                                                                                            public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                                                                                if (currentData.getValue() == null) {
+                                                                                                    currentData.setValue(1);
+                                                                                                } else {
+                                                                                                    currentData.setValue((Long) currentData.getValue() + 1);
+                                                                                                }
+                                                                                                return Transaction.success(currentData);
+                                                                                            }
+
+                                                                                            @Override
+                                                                                            public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                                                                                                if (error == null) {
+                                                                                                    rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/EmployeeWise/" + userId)
+                                                                                                            .runTransaction(new Transaction.Handler() {
+                                                                                                                @NonNull
+                                                                                                                @Override
+                                                                                                                public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                                                                                                    if (currentData.getValue() == null) {
+                                                                                                                        currentData.setValue(1);
+                                                                                                                    } else {
+                                                                                                                        currentData.setValue((Long) currentData.getValue() + 1);
+                                                                                                                    }
+                                                                                                                    return Transaction.success(currentData);
+                                                                                                                }
+
+                                                                                                                @Override
+                                                                                                                public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                                                                                                                    if (error == null) {
+                                                                                                                        rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/" + selectedWard)
+                                                                                                                                .runTransaction(new Transaction.Handler() {
+                                                                                                                                    @NonNull
+                                                                                                                                    @Override
+                                                                                                                                    public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                                                                                                                        if (currentData.getValue() == null) {
+                                                                                                                                            currentData.setValue(1);
+                                                                                                                                        } else {
+                                                                                                                                            currentData.setValue((Long) currentData.getValue() + 1);
+                                                                                                                                        }
+                                                                                                                                        return Transaction.success(currentData);
+                                                                                                                                    }
+
+                                                                                                                                    @Override
+                                                                                                                                    public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                                                                                                                                        if (error == null) {
+                                                                                                                                            rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/totalCount")
+                                                                                                                                                    .runTransaction(new Transaction.Handler() {
+                                                                                                                                                        @NonNull
+                                                                                                                                                        @Override
+                                                                                                                                                        public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                                                                                                                                            if (currentData.getValue() == null) {
+                                                                                                                                                                currentData.setValue(1);
+                                                                                                                                                            } else {
+                                                                                                                                                                currentData.setValue((Long) currentData.getValue() + 1);
+                                                                                                                                                            }
+                                                                                                                                                            return Transaction.success(currentData);
+                                                                                                                                                        }
+
+                                                                                                                                                        @Override
+                                                                                                                                                        public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                                                                                                                                                            if (error == null) {
+
+                                                                                                                                                                rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard)
+                                                                                                                                                                        .runTransaction(new Transaction.Handler() {
+                                                                                                                                                                            @NonNull
+                                                                                                                                                                            @Override
+                                                                                                                                                                            public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                                                                                                                                                                if (currentData.getValue() == null) {
+                                                                                                                                                                                    currentData.setValue(1);
+                                                                                                                                                                                } else {
+                                                                                                                                                                                    currentData.setValue((Long) currentData.getValue() + 1);
+                                                                                                                                                                                }
+                                                                                                                                                                                return Transaction.success(currentData);
+                                                                                                                                                                            }
+
+                                                                                                                                                                            @Override
+                                                                                                                                                                            public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                                                                                                                                                                                if (error == null) {
+                                                                                                                                                                                    houseTypeSpinner.setSelection(0);
+                                                                                                                                                                                    totalMarksTv.setText("" + MARKS_COUNT);
+                                                                                                                                                                                    MARKS_COUNT = 0;
+                                                                                                                                                                                    alreadyInstalledCb.setChecked(false);
+                                                                                                                                                                                    common.closeDialog(MapActivity.this);
+                                                                                                                                                                                    addMarkerForEntity(new LatLng(loc.getLatitude(), loc.getLongitude()));
+                                                                                                                                                                                }
+
+                                                                                                                                                                            }
+                                                                                                                                                                        });
+                                                                                                                                                            }
+
                                                                                                                                                         }
                                                                                                                                                     });
-                                                                                                                                        } else {
-                                                                                                                                            common.closeDialog(MapActivity.this);
-                                                                                                                                            common.showAlertBox("Please Retry", "Ok", "", MapActivity.this);
                                                                                                                                         }
 
-                                                                                                                                    });
+                                                                                                                                    }
+                                                                                                                                });
+                                                                                                                    }
 
-                                                                                                                        } else {
-                                                                                                                            common.closeDialog(MapActivity.this);
-                                                                                                                            common.showAlertBox("Please Retry", "Ok", "", MapActivity.this);
-                                                                                                                        }
+                                                                                                                }
+                                                                                                            });
+                                                                                                }
 
-                                                                                                                    });
-                                                                                                        } else {
-                                                                                                            common.closeDialog(MapActivity.this);
-                                                                                                            common.showAlertBox("Please Retry", "Ok", "", MapActivity.this);
-                                                                                                        }
-                                                                                                    });
-                                                                                        } else {
-                                                                                            common.closeDialog(MapActivity.this);
-                                                                                            common.showAlertBox("Please Retry", "Ok", "", MapActivity.this);
-                                                                                        }
-                                                                                    });
-                                                                        } else {
-                                                                            common.closeDialog(MapActivity.this);
-                                                                            common.showAlertBox("Please Retry", "Ok", "", MapActivity.this);
+                                                                                            }
+                                                                                        });
+
+                                                                            }
                                                                         }
                                                                     });
 
@@ -590,17 +579,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                                             common.showAlertBox("Please Retry", "Ok", "", MapActivity.this);
                                                         }
                                                     });
+
                                         } else {
                                             common.closeDialog(MapActivity.this);
                                             common.showAlertBox("Please Retry", "Ok", "", MapActivity.this);
                                         }
                                     });
+
                         } else {
                             common.closeDialog(MapActivity.this);
                             common.showAlertBox("Please Retry", "Ok", "", MapActivity.this);
                         }
                     });
-
 
         } else {
             common.closeDialog(MapActivity.this);
@@ -941,7 +931,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @Override
     protected void onPause() {
-        Log.d(TAG, "onPause: ");
         super.onPause();
         try {
             if (mCamera != null) {
@@ -950,7 +939,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Log.d(TAG, "onPause: " + e.toString());
         }
 
     }
@@ -967,13 +955,88 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @SuppressLint("StaticFieldLeak")
     public void onBackPressed() {
         super.onBackPressed();
-
         if (locationCallback != null) {
             LocationServices.getFusedLocationProviderClient(MapActivity.this).removeLocationUpdates(locationCallback);
         }
-        Intent intent = new Intent(MapActivity.this, SelectWardActivity.class);
-        startActivity(intent);
         finish();
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.map_activity_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.logOut) {
+            preferences.edit().clear().apply();
+            startActivity(new Intent(MapActivity.this, MainActivity.class));
+            finish();
+        } else if (item.getItemId() == R.id.move_to_line) {
+            dialogForMoveToLine();
+        }
+        return super.onOptionsItemSelected(item);
+
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private void dialogForMoveToLine() {
+        try {
+            View dialogLayout = MapActivity.this.getLayoutInflater().inflate(R.layout.move_to_line_view, null);
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapActivity.this).setView(dialogLayout).setCancelable(false);
+            AlertDialog dialog = alertDialog.create();
+            EditText lineNumberEt = dialogLayout.findViewById(R.id.move_to_line_et);
+            Button btn = dialogLayout.findViewById(R.id.move_to_line_confirm);
+            btn.setOnClickListener(v -> {
+                if (lineNumberEt != null && lineNumberEt.getText().toString().trim().length() > 0) {
+                    int lineNumber = Integer.parseInt(lineNumberEt.getText().toString());
+                    if ((currentLineNumber + 1) != lineNumber) {
+                        if ((lineNumber - 1) >= 0 && lineNumber <= dbColl.size()) {
+                            new AsyncTask<Void, Void, Boolean>() {
+                                @Override
+                                protected void onPreExecute() {
+                                    super.onPreExecute();
+                                    common.setProgressDialog("Please wait...", " ", MapActivity.this, MapActivity.this);
+                                }
+
+                                @Override
+                                protected Boolean doInBackground(Void... p) {
+                                    return common.network(MapActivity.this);
+                                }
+
+                                @Override
+                                protected void onPostExecute(Boolean result) {
+                                    if (result) {
+                                        dialog.cancel();
+                                        currentLineNumber = lineNumber - 1;
+                                        drawLine();
+                                        fetchMarkerForLine(true);
+                                    } else {
+                                        common.closeDialog(MapActivity.this);
+                                        common.showAlertBox("Please Connect to internet", "Ok", "", MapActivity.this);
+                                    }
+                                }
+                            }.execute();
+                        } else {
+                            common.showAlertBox("Please Enter a valid line number", "Ok", "", MapActivity.this);
+                        }
+                    } else {
+                        common.showAlertBox("Already on same line", "Ok", "", MapActivity.this);
+                    }
+                } else {
+                    common.showAlertBox("Please Enter a valid line number", "Ok", "", MapActivity.this);
+                }
+            });
+            Button closeBtn = dialogLayout.findViewById(R.id.move_to_line_cancel);
+            closeBtn.setOnClickListener(v -> {
+                dialog.cancel();
+            });
+            dialog.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -1024,7 +1087,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         } catch (Exception e) {
             e.printStackTrace();
-            Log.d(TAG, "openCam:C " + e.toString());
 
         }
     }

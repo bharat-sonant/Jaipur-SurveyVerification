@@ -2,15 +2,12 @@ package com.example.entitymarking;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -21,7 +18,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.Objects;
 
 public class LoginActivity extends AppCompatActivity {
     TextInputEditText userIdEt, userPassWordEt;
@@ -53,9 +49,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void setPageTitle() {
-//        Toolbar toolbar = findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
-//        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
         findViewById(R.id.screen_title).setOnLongClickListener(view -> {
             preferences.edit().putString("dbPath", "https://dtdnavigatortesting.firebaseio.com/").apply();
             preferences.edit().putString("storagePath", "Test").apply();
@@ -121,34 +114,45 @@ public class LoginActivity extends AppCompatActivity {
                         if (snapshot.hasChild("isActive")) {
                             if (snapshot.hasChild("password")) {
                                 if (snapshot.hasChild("name")) {
-                                    if (String.valueOf(snapshot.child("password").getValue()).equals(password)) {
-                                        if (Boolean.parseBoolean(String.valueOf(snapshot.child("isActive").getValue()))) {
-                                            preferences.edit().putString("userId", userId).apply();
-                                            Intent intent = new Intent(LoginActivity.this, SelectWardActivity.class);
-                                            common.closeDialog(LoginActivity.this);
-                                            startActivity(intent);
-                                            finish();
+                                    if (snapshot.hasChild("assignedWard")) {
+                                        if (String.valueOf(snapshot.child("password").getValue()).equals(password)) {
+                                            if (Boolean.parseBoolean(String.valueOf(snapshot.child("isActive").getValue()))) {
+                                                preferences.edit().putString("userId", userId).apply();
+                                                preferences.edit().putString("assignment", String.valueOf(snapshot.child("assignedWard").getValue())).apply();
+                                                Intent intent = new Intent(LoginActivity.this, MapActivity.class);
+                                                common.closeDialog(LoginActivity.this);
+                                                startActivity(intent);
+                                                finish();
+                                            } else {
+                                                isPass = true;
+                                                common.closeDialog(LoginActivity.this);
+                                                common.showAlertBox("InActive user", "ok", "", LoginActivity.this);
+                                            }
                                         } else {
                                             isPass = true;
                                             common.closeDialog(LoginActivity.this);
-                                            common.showAlertBox("InActive ID", "ok", "", LoginActivity.this);
+                                            common.showAlertBox("Incorrect Password", "ok", "", LoginActivity.this);
                                         }
                                     } else {
                                         isPass = true;
                                         common.closeDialog(LoginActivity.this);
-                                        common.showAlertBox("Incorrect Password", "ok", "", LoginActivity.this);
+                                        common.showAlertBox("No Work Assigned","ok","",LoginActivity.this);
                                     }
+
                                 } else {
                                     isPass = true;
                                     common.closeDialog(LoginActivity.this);
+                                    common.showAlertBox("name missing", "ok", "", LoginActivity.this);
                                 }
                             } else {
                                 isPass = true;
                                 common.closeDialog(LoginActivity.this);
+                                common.showAlertBox("password missing", "ok", "", LoginActivity.this);
                             }
                         } else {
                             isPass = true;
                             common.closeDialog(LoginActivity.this);
+                            common.showAlertBox("InActive User", "ok", "", LoginActivity.this);
                         }
                     } else {
                         isPass = true;
@@ -166,7 +170,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void fetchStringsValue() {
-        rootRef.child("Settings/MarkerApplicationData/alreadyInstalledCheckBoxText/").addListenerForSingleValueEvent(new ValueEventListener() {
+        rootRef.child("Settings/MarkerApplicationData/alreadyInstalledCheckBoxText/")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.getValue() != null) {
