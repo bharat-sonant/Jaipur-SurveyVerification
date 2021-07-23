@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
@@ -26,9 +27,9 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -58,7 +59,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
@@ -66,7 +66,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.MutableData;
-import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
@@ -94,7 +93,6 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
     String selectedWard = null, selectedCity, userId, date, cbText;
-    double lat, lng;
     int currentLineNumber = 0,                      // use + 1 to get currentLine
             MARKS_COUNT = 0;
     Spinner houseTypeSpinner;
@@ -104,25 +102,20 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     GoogleMap mMap;
     LocationCallback locationCallback;
     LatLng lastKnownLatLngForWalkingMan = null;
-    Marker manMarker;
     DatabaseReference rootRef;
     SharedPreferences preferences;
-    JSONObject wardJSONObject;
     List<List<LatLng>> dbColl = new ArrayList<>();
-    List<String> houseList = new ArrayList<>();
     HashMap<String, Integer> houseDataHashMap;
     CommonFunctions common = new CommonFunctions();
-    boolean isPass = true, captureClickControl = true;
+    boolean isPass = true, captureClickControl = true, boolToInstantiateMovingMarker = true;
     private static final int MAIN_LOC_REQUEST = 5000;
     private static final int GPS_CODE_FOR_ENTITY = 501;
     private static final int FOCUS_AREA_SIZE = 300;
     private static final int PERMISSION_CODE = 1000;
-    Bitmap thumbnail;
+    CountDownTimer cdTimer;
     private Camera mCamera;
     private SurfaceView surfaceView;
     Camera.PictureCallback pictureCallback;
-
-    private final static String TAG = MapActivity.class.getSimpleName();
 
     @SuppressLint("SimpleDateFormat")
     @Override
@@ -136,7 +129,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
-    @SuppressLint("ResourceType")
+    @SuppressLint({"ResourceType", "SimpleDateFormat"})
     private void inIt() {
         currentLineTv = findViewById(R.id.current_line_tv);
         rootRef = common.getDatabaseRef(this);
@@ -165,6 +158,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mainCheckLocationForRealTimeRequest();
     }
 
+    @SuppressLint("SetTextI18n")
     private void setPageTitle() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -180,7 +174,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.getValue() != null) {
-                    houseList = new ArrayList<>();
+                    List<String> houseList = new ArrayList<>();
                     houseDataHashMap = new HashMap<>();
                     houseList.add("Select House Type");
                     for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
@@ -219,9 +213,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void fetchWardJson() {
         try {
-            StorageReference stoRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + selectedCity + "/WardJson").child(selectedWard + ".json");
             File localFile = File.createTempFile("images", "jpg");
-            stoRef.getFile(localFile).addOnSuccessListener(taskSnapshot -> {
+            FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + selectedCity + "/WardJson")
+                    .child(selectedWard + ".json").getFile(localFile).addOnSuccessListener(taskSnapshot -> {
                 try {
                     BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(localFile)));
                     StringBuilder sb = new StringBuilder();
@@ -229,8 +223,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     while ((str = br.readLine()) != null) {
                         sb.append(str);
                     }
-                    wardJSONObject = new JSONObject(sb.toString());
-                    prepareDB();
+                    prepareDB(new JSONObject(sb.toString()));
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 }
@@ -254,7 +247,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
-    private void prepareDB() {
+    private void prepareDB(JSONObject wardJSONObject) {
         Iterator<String> keys = wardJSONObject.keys();
         while (keys.hasNext()) {
             String key = keys.next();
@@ -264,8 +257,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     JSONArray latLngPointJSONArray = wardJSONObject.getJSONObject(key).getJSONArray("points");
                     for (int a = 0; a < latLngPointJSONArray.length(); a++) {
                         try {
-                            lat = latLngPointJSONArray.getJSONArray(a).getDouble(0);
-                            lng = latLngPointJSONArray.getJSONArray(a).getDouble(1);
+                            double lat = latLngPointJSONArray.getJSONArray(a).getDouble(0);
+                            double lng = latLngPointJSONArray.getJSONArray(a).getDouble(1);
                             tempList.add(new LatLng(lat, lng));
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -284,31 +277,32 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @SuppressLint("SetTextI18n")
     private void fetchMarkerForLine(boolean isCloseProgressDialog) {
-        rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                totalMarksTv.setText("" + 0);
-                if (snapshot.getValue() != null) {
-                    if (snapshot.hasChild("marksCount")) {
-                        totalMarksTv.setText(String.valueOf(snapshot.child("marksCount").getValue()));
-                    }
-                    for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                        if (dataSnapshot.hasChild("latLng")) {
-                            String[] tempStr = String.valueOf(dataSnapshot.child("latLng").getValue()).split(",");
-                            double lat = Double.parseDouble(tempStr[0]);
-                            double lng = Double.parseDouble(tempStr[1]);
-                            addMarkerForEntity(new LatLng(lat, lng));
+        rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1))
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        totalMarksTv.setText("" + 0);
+                        if (snapshot.getValue() != null) {
+                            if (snapshot.hasChild("marksCount")) {
+                                totalMarksTv.setText(String.valueOf(snapshot.child("marksCount").getValue()));
+                            }
+                            for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                                if (dataSnapshot.hasChild("latLng")) {
+                                    String[] tempStr = String.valueOf(dataSnapshot.child("latLng").getValue()).split(",");
+                                    double lat = Double.parseDouble(tempStr[0]);
+                                    double lng = Double.parseDouble(tempStr[1]);
+                                    addMarkerForEntity(new LatLng(lat, lng));
+                                }
+                            }
                         }
+                        if (isCloseProgressDialog) common.closeDialog(MapActivity.this);
                     }
-                }
-                if (isCloseProgressDialog) common.closeDialog(MapActivity.this);
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
 
-            }
-        });
+                    }
+                });
     }
 
     private void mainCheckLocationForRealTimeRequest() {
@@ -388,40 +382,47 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void updateMarksCount(Location finalLocation) {
-        rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).child("marksCount")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.getValue() != null) {
-                            MARKS_COUNT = Integer.parseInt(String.valueOf(snapshot.getValue()));
-                            MARKS_COUNT++;
-                        } else {
-                            MARKS_COUNT = 1;
-                        }
-                        captureClickControl = true;
-                        common.closeDialog(MapActivity.this);
-                        AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
-                        builder.setMessage("Data Collected successfully.Proceed to Save.").setCancelable(false)
-                                .setPositiveButton("Proceed", (dialog, id) -> {
-                                    common.setProgressDialog("Saving", "", MapActivity.this, MapActivity.this);
-                                    saveMarkedLocationAndUploadPhoto(finalLocation);
-                                    dialog.cancel();
-                                })
-                                .setNegativeButton("Cancel", (dialog, i) -> dialog.cancel());
-                        AlertDialog alertDialog = builder.create();
-                        alertDialog.show();
-                        houseTypeSpinner.setEnabled(true);
-                        alreadyInstalledCb.setEnabled(true);
-                    }
+        common.closeDialog(MapActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
+        builder.setMessage("Data Collected successfully.\nProceed to Save.").setCancelable(false)
+                .setPositiveButton("Proceed", (dialog, id) -> {
+                    common.setProgressDialog("Saving", "", MapActivity.this, MapActivity.this);
+                    rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).child("marksCount")
+                            .runTransaction(new Transaction.Handler() {
+                                @NonNull
+                                @Override
+                                public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                    if (currentData.getValue() == null) {
+                                        currentData.setValue(1);
+                                    } else {
+                                        currentData.setValue((Long) currentData.getValue() + 1);
+                                    }
+                                    return Transaction.success(currentData);
+                                }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
+                                @Override
+                                public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                                    if (error == null) {
+                                        assert currentData != null;
+                                        MARKS_COUNT = Integer.parseInt(String.valueOf(currentData.getValue()));
+                                        saveMarkedLocationAndUploadPhoto(finalLocation);
+                                    } else {
+                                        common.closeDialog(MapActivity.this);
+                                    }
 
-                    }
-                });
+                                }
+                            });
+                    dialog.cancel();
+                })
+                .setNegativeButton("Cancel", (dialog, i) -> dialog.cancel());
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+        captureClickControl = true;
+        houseTypeSpinner.setEnabled(true);
+        alreadyInstalledCb.setEnabled(true);
     }
 
-    @SuppressLint("SimpleDateFormat")
+    @SuppressLint({"SimpleDateFormat", "SetTextI18n"})
     private void saveMarkedLocationAndUploadPhoto(Location loc) {
         if (MARKS_COUNT != 0) {
             FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -443,143 +444,132 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT).setValue(hM)
                                     .addOnCompleteListener(task -> {
                                         if (task.isSuccessful()) {
-                                            rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1) + "/marksCount").setValue(MARKS_COUNT)
-                                                    .addOnCompleteListener(task1 -> {
-                                                        if (task1.isSuccessful()) {
-                                                            rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/" + userId)
-                                                                    .runTransaction(new Transaction.Handler() {
-                                                                        @NonNull
-                                                                        @Override
-                                                                        public Transaction.Result doTransaction(@NonNull MutableData currentData) {
-                                                                            if (currentData.getValue() == null) {
-                                                                                currentData.setValue(1);
-                                                                            } else {
-                                                                                currentData.setValue((Long) currentData.getValue() + 1);
+                                            rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/" + userId)
+                                                    .runTransaction(new Transaction.Handler() {
+                                                        @NonNull
+                                                        @Override
+                                                        public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                                            if (currentData.getValue() == null) {
+                                                                currentData.setValue(1);
+                                                            } else {
+                                                                currentData.setValue((Long) currentData.getValue() + 1);
+                                                            }
+                                                            return Transaction.success(currentData);
+                                                        }
+
+                                                        @Override
+                                                        public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                                                            if (error == null) {
+                                                                rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/totalCount")
+                                                                        .runTransaction(new Transaction.Handler() {
+                                                                            @NonNull
+                                                                            @Override
+                                                                            public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                                                                if (currentData.getValue() == null) {
+                                                                                    currentData.setValue(1);
+                                                                                } else {
+                                                                                    currentData.setValue((Long) currentData.getValue() + 1);
+                                                                                }
+                                                                                return Transaction.success(currentData);
                                                                             }
-                                                                            return Transaction.success(currentData);
-                                                                        }
 
-                                                                        @Override
-                                                                        public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-                                                                            if (error == null) {
-                                                                                rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/totalCount")
-                                                                                        .runTransaction(new Transaction.Handler() {
-                                                                                            @NonNull
-                                                                                            @Override
-                                                                                            public Transaction.Result doTransaction(@NonNull MutableData currentData) {
-                                                                                                if (currentData.getValue() == null) {
-                                                                                                    currentData.setValue(1);
-                                                                                                } else {
-                                                                                                    currentData.setValue((Long) currentData.getValue() + 1);
-                                                                                                }
-                                                                                                return Transaction.success(currentData);
-                                                                                            }
-
-                                                                                            @Override
-                                                                                            public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-                                                                                                if (error == null) {
-                                                                                                    rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/EmployeeWise/" + userId)
-                                                                                                            .runTransaction(new Transaction.Handler() {
-                                                                                                                @NonNull
-                                                                                                                @Override
-                                                                                                                public Transaction.Result doTransaction(@NonNull MutableData currentData) {
-                                                                                                                    if (currentData.getValue() == null) {
-                                                                                                                        currentData.setValue(1);
-                                                                                                                    } else {
-                                                                                                                        currentData.setValue((Long) currentData.getValue() + 1);
-                                                                                                                    }
-                                                                                                                    return Transaction.success(currentData);
-                                                                                                                }
-
-                                                                                                                @Override
-                                                                                                                public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-                                                                                                                    if (error == null) {
-                                                                                                                        rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/" + selectedWard)
-                                                                                                                                .runTransaction(new Transaction.Handler() {
-                                                                                                                                    @NonNull
-                                                                                                                                    @Override
-                                                                                                                                    public Transaction.Result doTransaction(@NonNull MutableData currentData) {
-                                                                                                                                        if (currentData.getValue() == null) {
-                                                                                                                                            currentData.setValue(1);
-                                                                                                                                        } else {
-                                                                                                                                            currentData.setValue((Long) currentData.getValue() + 1);
-                                                                                                                                        }
-                                                                                                                                        return Transaction.success(currentData);
-                                                                                                                                    }
-
-                                                                                                                                    @Override
-                                                                                                                                    public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-                                                                                                                                        if (error == null) {
-                                                                                                                                            rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/totalCount")
-                                                                                                                                                    .runTransaction(new Transaction.Handler() {
-                                                                                                                                                        @NonNull
-                                                                                                                                                        @Override
-                                                                                                                                                        public Transaction.Result doTransaction(@NonNull MutableData currentData) {
-                                                                                                                                                            if (currentData.getValue() == null) {
-                                                                                                                                                                currentData.setValue(1);
-                                                                                                                                                            } else {
-                                                                                                                                                                currentData.setValue((Long) currentData.getValue() + 1);
-                                                                                                                                                            }
-                                                                                                                                                            return Transaction.success(currentData);
-                                                                                                                                                        }
-
-                                                                                                                                                        @Override
-                                                                                                                                                        public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-                                                                                                                                                            if (error == null) {
-
-                                                                                                                                                                rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard)
-                                                                                                                                                                        .runTransaction(new Transaction.Handler() {
-                                                                                                                                                                            @NonNull
-                                                                                                                                                                            @Override
-                                                                                                                                                                            public Transaction.Result doTransaction(@NonNull MutableData currentData) {
-                                                                                                                                                                                if (currentData.getValue() == null) {
-                                                                                                                                                                                    currentData.setValue(1);
-                                                                                                                                                                                } else {
-                                                                                                                                                                                    currentData.setValue((Long) currentData.getValue() + 1);
-                                                                                                                                                                                }
-                                                                                                                                                                                return Transaction.success(currentData);
-                                                                                                                                                                            }
-
-                                                                                                                                                                            @Override
-                                                                                                                                                                            public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-                                                                                                                                                                                if (error == null) {
-                                                                                                                                                                                    houseTypeSpinner.setSelection(0);
-                                                                                                                                                                                    totalMarksTv.setText("" + MARKS_COUNT);
-                                                                                                                                                                                    MARKS_COUNT = 0;
-                                                                                                                                                                                    alreadyInstalledCb.setChecked(false);
-                                                                                                                                                                                    common.closeDialog(MapActivity.this);
-                                                                                                                                                                                    addMarkerForEntity(new LatLng(loc.getLatitude(), loc.getLongitude()));
-                                                                                                                                                                                }
-
-                                                                                                                                                                            }
-                                                                                                                                                                        });
-                                                                                                                                                            }
-
-                                                                                                                                                        }
-                                                                                                                                                    });
-                                                                                                                                        }
-
-                                                                                                                                    }
-                                                                                                                                });
-                                                                                                                    }
-
-                                                                                                                }
-                                                                                                            });
+                                                                            @Override
+                                                                            public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                                                                                if (error == null) {
+                                                                                    rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/EmployeeWise/" + userId)
+                                                                                            .runTransaction(new Transaction.Handler() {
+                                                                                                @NonNull
+                                                                                                @Override
+                                                                                                public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                                                                                    if (currentData.getValue() == null) {
+                                                                                                        currentData.setValue(1);
+                                                                                                    } else {
+                                                                                                        currentData.setValue((Long) currentData.getValue() + 1);
+                                                                                                    }
+                                                                                                    return Transaction.success(currentData);
                                                                                                 }
 
-                                                                                            }
-                                                                                        });
+                                                                                                @Override
+                                                                                                public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                                                                                                    if (error == null) {
+                                                                                                        rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/" + selectedWard)
+                                                                                                                .runTransaction(new Transaction.Handler() {
+                                                                                                                    @NonNull
+                                                                                                                    @Override
+                                                                                                                    public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                                                                                                        if (currentData.getValue() == null) {
+                                                                                                                            currentData.setValue(1);
+                                                                                                                        } else {
+                                                                                                                            currentData.setValue((Long) currentData.getValue() + 1);
+                                                                                                                        }
+                                                                                                                        return Transaction.success(currentData);
+                                                                                                                    }
+
+                                                                                                                    @Override
+                                                                                                                    public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                                                                                                                        if (error == null) {
+                                                                                                                            rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/totalCount")
+                                                                                                                                    .runTransaction(new Transaction.Handler() {
+                                                                                                                                        @NonNull
+                                                                                                                                        @Override
+                                                                                                                                        public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                                                                                                                            if (currentData.getValue() == null) {
+                                                                                                                                                currentData.setValue(1);
+                                                                                                                                            } else {
+                                                                                                                                                currentData.setValue((Long) currentData.getValue() + 1);
+                                                                                                                                            }
+                                                                                                                                            return Transaction.success(currentData);
+                                                                                                                                        }
+
+                                                                                                                                        @Override
+                                                                                                                                        public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                                                                                                                                            if (error == null) {
+
+                                                                                                                                                rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard)
+                                                                                                                                                        .runTransaction(new Transaction.Handler() {
+                                                                                                                                                            @NonNull
+                                                                                                                                                            @Override
+                                                                                                                                                            public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                                                                                                                                                if (currentData.getValue() == null) {
+                                                                                                                                                                    currentData.setValue(1);
+                                                                                                                                                                } else {
+                                                                                                                                                                    currentData.setValue((Long) currentData.getValue() + 1);
+                                                                                                                                                                }
+                                                                                                                                                                return Transaction.success(currentData);
+                                                                                                                                                            }
+
+                                                                                                                                                            @Override
+                                                                                                                                                            public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                                                                                                                                                                if (error == null) {
+                                                                                                                                                                    houseTypeSpinner.setSelection(0);
+                                                                                                                                                                    totalMarksTv.setText("" + MARKS_COUNT);
+                                                                                                                                                                    alreadyInstalledCb.setChecked(false);
+                                                                                                                                                                    common.closeDialog(MapActivity.this);
+                                                                                                                                                                    addMarkerForEntity(new LatLng(loc.getLatitude(), loc.getLongitude()));
+                                                                                                                                                                }
+
+                                                                                                                                                            }
+                                                                                                                                                        });
+                                                                                                                                            }
+
+                                                                                                                                        }
+                                                                                                                                    });
+                                                                                                                        }
+
+                                                                                                                    }
+                                                                                                                });
+                                                                                                    }
+
+                                                                                                }
+                                                                                            });
+                                                                                }
 
                                                                             }
-                                                                        }
-                                                                    });
+                                                                        });
 
-                                                        } else {
-                                                            common.closeDialog(MapActivity.this);
-                                                            common.showAlertBox("Please Retry", "Ok", "", MapActivity.this);
+                                                            }
                                                         }
                                                     });
-
                                         } else {
                                             common.closeDialog(MapActivity.this);
                                             common.showAlertBox("Please Retry", "Ok", "", MapActivity.this);
@@ -608,19 +598,26 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+
         locationCallback = new LocationCallback() {
             @Override
-            public void onLocationResult(LocationResult locationResult) {
+            public void onLocationResult(@NonNull LocationResult locationResult) {
                 super.onLocationResult(locationResult);
-                if (locationResult != null && locationResult.getLocations().size() > 0) {
+                if (locationResult.getLocations().size() > 0) {
                     int latestLocationIndex = locationResult.getLocations().size() - 1;
-                    LatLng currentLatLng = new LatLng(locationResult.getLocations().get(latestLocationIndex).getLatitude(), locationResult.getLocations().get(latestLocationIndex).getLongitude());
-                    if (manMarker == null) {
-                        addRealtimeMarker(currentLatLng);
-                    } else {
-                        manMarker.setPosition(currentLatLng);
-                    }
+                    LatLng currentLatLng = new LatLng(locationResult.getLocations().get(latestLocationIndex).getLatitude(),
+                            locationResult.getLocations().get(latestLocationIndex).getLongitude());
+
                     lastKnownLatLngForWalkingMan = currentLatLng;
+
+                    if (boolToInstantiateMovingMarker) {
+                        boolToInstantiateMovingMarker = false;
+                        common.setMovingMarker(mMap, currentLatLng, MapActivity.this);
+                    }
+
+                    if (cdTimer == null) {
+                        timerForWalkingMan();
+                    }
 
                     mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
                     mMap.animateCamera(CameraUpdateFactory.zoomTo(19));
@@ -630,23 +627,33 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         LocationServices.getFusedLocationProviderClient(this).requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
     }
 
-    private void addRealtimeMarker(LatLng latLng) {
-        manMarker = mMap.addMarker(new MarkerOptions().position(latLng).icon(common.BitmapFromVector(getApplicationContext(), R.drawable.man)));
+    private void timerForWalkingMan() {
+        cdTimer = new CountDownTimer(2000, 1000) {
+            @Override
+            public void onTick(long l) {
+            }
+
+            @Override
+            public void onFinish() {
+                common.currentLocationShow(lastKnownLatLngForWalkingMan);
+                timerForWalkingMan();
+            }
+        }.start();
     }
 
     @SuppressLint("SetTextI18n")
     private void drawLine() {
+
         mMap.clear();
+        boolToInstantiateMovingMarker = true;
         currentLineTv.setText("" + (currentLineNumber + 1) + " / " + dbColl.size());
+
         mMap.addPolyline(new PolylineOptions().addAll(dbColl.get(currentLineNumber))
                 .startCap(new RoundCap())
                 .endCap(new RoundCap())
                 .color(0xff000000)
                 .jointType(JointType.ROUND)
                 .width(8));
-        if (lastKnownLatLngForWalkingMan != null) {
-            addRealtimeMarker(lastKnownLatLngForWalkingMan);
-        }
     }
 
     private void openCam() {
@@ -673,33 +680,29 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 parameters.setFocusAreas(meteringAreas);
                 mCamera.setParameters(parameters);
             }
-            mCamera.autoFocus(mAutoFocusTakePictureCallback);
+            mCamera.autoFocus((success, camera) -> {
+
+            });
         }
     }
 
-    private Camera.AutoFocusCallback mAutoFocusTakePictureCallback = (success, camera) -> {
-        if (success) {
-        } else {
-        }
-    };
-
     private Rect calculateFocusArea(float x, float y) {
-        int left = clamp(Float.valueOf((x / surfaceView.getWidth()) * 2000 - 1000).intValue(), FOCUS_AREA_SIZE);
-        int top = clamp(Float.valueOf((y / surfaceView.getHeight()) * 2000 - 1000).intValue(), FOCUS_AREA_SIZE);
+        int left = clamp(Float.valueOf((x / surfaceView.getWidth()) * 2000 - 1000).intValue());
+        int top = clamp(Float.valueOf((y / surfaceView.getHeight()) * 2000 - 1000).intValue());
 
         return new Rect(left, top, left + FOCUS_AREA_SIZE, top + FOCUS_AREA_SIZE);
     }
 
-    private int clamp(int touchCoordinateInCameraReper, int focusAreaSize) {
+    private int clamp(int touchCoordinateInCameraReper) {
         int result;
-        if (Math.abs(touchCoordinateInCameraReper) + focusAreaSize / 2 > 1000) {
+        if (Math.abs(touchCoordinateInCameraReper) + MapActivity.FOCUS_AREA_SIZE / 2 > 1000) {
             if (touchCoordinateInCameraReper > 0) {
-                result = 1000 - focusAreaSize / 2;
+                result = 1000 - MapActivity.FOCUS_AREA_SIZE / 2;
             } else {
-                result = -1000 + focusAreaSize / 2;
+                result = -1000 + MapActivity.FOCUS_AREA_SIZE / 2;
             }
         } else {
-            result = touchCoordinateInCameraReper - focusAreaSize / 2;
+            result = touchCoordinateInCameraReper - MapActivity.FOCUS_AREA_SIZE / 2;
         }
         return result;
     }
@@ -776,7 +779,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         try {
             Button btn = dialogLayout.findViewById(R.id.capture_image_btn);
             btn.setOnClickListener(v -> {
-                Log.d(TAG, "showAlertDialog: AAA");
                 common.setProgressDialog("Please Wait", "", MapActivity.this, MapActivity.this);
                 isPass = true;
                 houseTypeSpinner.setEnabled(false);
@@ -797,11 +799,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             pictureCallback = (bytes, camera) -> {
                 Matrix matrix = new Matrix();
                 matrix.postRotate(90F);
-                thumbnail = Bitmap.createBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length),
+                photo = Bitmap.createBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length),
                         0, 0, BitmapFactory.decodeByteArray(bytes, 0, bytes.length).getWidth(),
                         BitmapFactory.decodeByteArray(bytes, 0, bytes.length).getHeight(), matrix, true);
-                if (thumbnail != null) {
-                    photo = thumbnail;
+                if (photo != null) {
                     pickLocForEntity();
                 } else {
                     common.closeDialog(MapActivity.this);
@@ -1041,7 +1042,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         try {
             if (requestCode == 500 && grantResults.length > 0) {

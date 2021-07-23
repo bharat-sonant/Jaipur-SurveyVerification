@@ -1,6 +1,7 @@
 package com.example.entitymarking;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -9,16 +10,27 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.os.Handler;
+import android.os.SystemClock;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.Interpolator;
 
 import androidx.core.content.ContextCompat;
+import androidx.dynamicanimation.animation.SpringAnimation;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -32,20 +44,22 @@ public class CommonFunctions {
     AlertDialog alertDialog;
     ProgressDialog dialog;
     int moveMarker = 1;
+    private float moveDistance[] = new float[1];
+    LatLng previousLatLng;
     Marker markerManOne, markerManTwo, markerManThree, markerManFour, markerManFive, markerManSix, markerManStop;
     public static final int LOCATION_REQUEST = 500;
 
 
-    private SharedPreferences getDatabaseSp(Context context){
-        return context.getSharedPreferences("LoginDetails",Context.MODE_PRIVATE);
+    private SharedPreferences getDatabaseSp(Context context) {
+        return context.getSharedPreferences("LoginDetails", Context.MODE_PRIVATE);
     }
 
-    public DatabaseReference getDatabaseRef(Context context){
-        return FirebaseDatabase.getInstance(getDatabaseSp(context).getString("dbPath"," ")).getReference();
+    public DatabaseReference getDatabaseRef(Context context) {
+        return FirebaseDatabase.getInstance(getDatabaseSp(context).getString("dbPath", " ")).getReference();
     }
 
-    public StorageReference getDatabaseStoragePath(Context context){
-        return FirebaseStorage.getInstance().getReferenceFromUrl(getDatabaseSp(context).getString("storagePath"," "));
+    public StorageReference getDatabaseStoragePath(Context context) {
+        return FirebaseStorage.getInstance().getReferenceFromUrl(getDatabaseSp(context).getString("storagePath", " "));
     }
 
     public void showAlertBox(String message, String pBtn, String nBtn, Context ctx) {
@@ -62,64 +76,6 @@ public class CommonFunctions {
     public void hideAlertBox() {
         if (alertDialog != null) {
             alertDialog.dismiss();
-        }
-    }
-
-    private void setVisibleMarker() {
-        if (moveMarker == 1) {
-            moveMarker = 2;
-            markerManStop.setVisible(false);
-            markerManTwo.setVisible(false);
-            markerManThree.setVisible(false);
-            markerManFour.setVisible(false);
-            markerManFive.setVisible(false);
-            markerManSix.setVisible(false);
-            markerManOne.setVisible(true);
-        } else if (moveMarker == 2) {
-            moveMarker = 3;
-            markerManStop.setVisible(false);
-            markerManOne.setVisible(false);
-            markerManThree.setVisible(false);
-            markerManFour.setVisible(false);
-            markerManFive.setVisible(false);
-            markerManSix.setVisible(false);
-            markerManTwo.setVisible(true);
-        } else if (moveMarker == 3) {
-            moveMarker = 4;
-            markerManStop.setVisible(false);
-            markerManTwo.setVisible(false);
-            markerManOne.setVisible(false);
-            markerManFour.setVisible(false);
-            markerManFive.setVisible(false);
-            markerManSix.setVisible(false);
-            markerManThree.setVisible(true);
-        } else if (moveMarker == 4) {
-            moveMarker = 5;
-            markerManStop.setVisible(false);
-            markerManTwo.setVisible(false);
-            markerManThree.setVisible(false);
-            markerManOne.setVisible(false);
-            markerManFive.setVisible(false);
-            markerManSix.setVisible(false);
-            markerManFour.setVisible(true);
-        } else if (moveMarker == 5) {
-            moveMarker = 6;
-            markerManStop.setVisible(false);
-            markerManTwo.setVisible(false);
-            markerManThree.setVisible(false);
-            markerManFour.setVisible(false);
-            markerManOne.setVisible(false);
-            markerManSix.setVisible(false);
-            markerManFive.setVisible(true);
-        } else {
-            moveMarker = 1;
-            markerManStop.setVisible(false);
-            markerManTwo.setVisible(false);
-            markerManThree.setVisible(false);
-            markerManFour.setVisible(false);
-            markerManFive.setVisible(false);
-            markerManOne.setVisible(false);
-            markerManSix.setVisible(true);
         }
     }
 
@@ -196,4 +152,117 @@ public class CommonFunctions {
             return false;
         }
     }
+
+    @SuppressLint("UseCompatLoadingForDrawables")
+    public void setMovingMarker(GoogleMap mMap, LatLng currentLatLng, Context context) {
+
+        previousLatLng = currentLatLng;
+
+        markerManOne = mMap.addMarker(new MarkerOptions().position(currentLatLng)
+                .icon(BitmapFromVector(context.getApplicationContext(), R.drawable.man1)));
+        markerManTwo = mMap.addMarker(new MarkerOptions().position(currentLatLng)
+                .icon(BitmapFromVector(context.getApplicationContext(), R.drawable.man2)));
+        markerManThree = mMap.addMarker(new MarkerOptions().position(currentLatLng)
+                .icon(BitmapFromVector(context.getApplicationContext(), R.drawable.man3)));
+        markerManFour = mMap.addMarker(new MarkerOptions().position(currentLatLng)
+                .icon(BitmapFromVector(context.getApplicationContext(), R.drawable.man4)));
+        markerManFive = mMap.addMarker(new MarkerOptions().position(currentLatLng)
+                .icon(BitmapFromVector(context.getApplicationContext(), R.drawable.man5)));
+        markerManSix = mMap.addMarker(new MarkerOptions().position(currentLatLng)
+                .icon(BitmapFromVector(context.getApplicationContext(), R.drawable.man6)));
+        markerManStop = mMap.addMarker(new MarkerOptions().position(currentLatLng)
+                .icon(BitmapFromVector(context.getApplicationContext(), R.drawable.manstop)));
+
+        setOneToSixMarkerInvisible();
+    }
+
+    private void setOneToSixMarkerInvisible() {
+        markerManOne.setVisible(false);
+        markerManTwo.setVisible(false);
+        markerManThree.setVisible(false);
+        markerManFour.setVisible(false);
+        markerManFive.setVisible(false);
+        markerManSix.setVisible(false);
+    }
+
+    @SuppressLint("MissingPermission")
+    public void currentLocationShow(LatLng currentLatLng) {
+        Location.distanceBetween(currentLatLng.latitude, currentLatLng.longitude, previousLatLng.latitude, previousLatLng.longitude, moveDistance);
+        if (moveDistance[0] > 2) {
+            final LatLng startPosition = previousLatLng;
+            final LatLng finalPosition = currentLatLng;
+            final Handler handler = new Handler();
+            final long start = SystemClock.uptimeMillis();
+            final Interpolator interpolator = new AccelerateDecelerateInterpolator();
+            final float durationInMs = 2000;
+            handler.post(new Runnable() {
+                long elapsed;
+                float t;
+                float v;
+
+                @Override
+                public void run() {
+                    elapsed = SystemClock.uptimeMillis() - start;
+                    t = elapsed / durationInMs;
+                    v = interpolator.getInterpolation(t);
+                    LatLng currentPosition = new LatLng(
+                            startPosition.latitude * (1 - t) + finalPosition.latitude * t,
+                            startPosition.longitude * (1 - t) + finalPosition.longitude * t);
+
+                    markerManStop.setPosition(currentPosition);
+                    markerManOne.setPosition(currentPosition);
+                    markerManTwo.setPosition(currentPosition);
+                    markerManThree.setPosition(currentPosition);
+                    markerManFour.setPosition(currentPosition);
+                    markerManFive.setPosition(currentPosition);
+                    markerManSix.setPosition(currentPosition);
+
+                    if (t < 1) {
+                        setVisibleMarker();
+                        handler.postDelayed(this, 150);
+                    } else {
+                        moveMarker = 1;
+                        setOneToSixMarkerInvisible();
+                        markerManStop.setVisible(true);
+                    }
+                }
+            });
+            previousLatLng = currentLatLng;
+        }
+    }
+
+    private void setVisibleMarker() {
+
+        markerManStop.setVisible(false);
+        setOneToSixMarkerInvisible();
+
+        switch (moveMarker) {
+            case 1:
+                moveMarker = 2;
+                markerManOne.setVisible(true);
+                break;
+            case 2:
+                moveMarker = 3;
+                markerManTwo.setVisible(true);
+                break;
+            case 3:
+                moveMarker = 4;
+                markerManThree.setVisible(true);
+                break;
+            case 4:
+                moveMarker = 5;
+                markerManFour.setVisible(true);
+                break;
+            case 5:
+                moveMarker = 6;
+                markerManFive.setVisible(true);
+                break;
+            default:
+                moveMarker = 1;
+                markerManSix.setVisible(true);
+                break;
+
+        }
+    }
+
 }
