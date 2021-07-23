@@ -176,24 +176,24 @@
             android:elevation="10dp"
             android:orientation="vertical"
             android:paddingLeft="8dp"
-            android:paddingTop="15dp"
+            android:paddingTop="16dp"
             android:paddingRight="8dp"
-            android:paddingBottom="8dp">
+            android:paddingBottom="16dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:padding="8dp">
+                android:background="@drawable/view_border"
+                android:layout_margin="8dp">
 
                 <CheckBox
                     android:id="@+id/already_installed_cb"
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
-                    android:background="@drawable/view_border"
                     android:padding="8dp"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"/>
 
             </LinearLayout>
 
@@ -201,36 +201,36 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:orientation="horizontal"
-                android:weightSum="10">
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
 
                 <Spinner
                     android:id="@+id/house_type_spinner"
                     android:layout_width="0dp"
                     android:layout_height="50dp"
                     android:layout_marginLeft="8dp"
-                    android:layout_marginRight="4dp"
-                    android:layout_weight="7"
+                    android:layout_marginRight="8dp"
+                    android:layout_weight="1"
                     android:background="@drawable/spinner_background_for_house_type" />
 
-                <Button
-                    android:id="@+id/pick_loc_fab_btn"
-                    android:layout_width="0dp"
-                    android:layout_height="50dp"
-                    android:layout_marginLeft="4dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginRight="8dp"
-                    android:layout_marginBottom="4dp"
-                    android:layout_weight="3"
-                    android:background="@drawable/capture_btn_background"
-                    android:drawableLeft="@drawable/capture_icon"
-                    android:drawablePadding="4dp"
-                    android:onClick="onSaveClick"
-                    android:padding="14dp"
-                    android:text="Click"
-                    android:textAllCaps="false"
-                    android:textColor="#fff"
-                    android:textSize="18sp" />
+<!--                <Button-->
+<!--                    android:id="@+id/pick_loc_fab_btn"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="50dp"-->
+<!--                    android:layout_marginLeft="4dp"-->
+<!--                    android:layout_marginTop="4dp"-->
+<!--                    android:layout_marginRight="8dp"-->
+<!--                    android:layout_marginBottom="4dp"-->
+<!--                    android:layout_weight="3"-->
+<!--                    android:background="@drawable/capture_btn_background"-->
+<!--                    android:drawableLeft="@drawable/capture_icon"-->
+<!--                    android:drawablePadding="4dp"-->
+<!--                    android:onClick="onSaveClick"-->
+<!--                    android:padding="14dp"-->
+<!--                    android:text="Click"-->
+<!--                    android:textAllCaps="false"-->
+<!--                    android:textColor="#fff"-->
+<!--                    android:textSize="18sp" />-->
 
             </LinearLayout>
 

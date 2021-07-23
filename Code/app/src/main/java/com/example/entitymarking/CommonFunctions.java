@@ -132,11 +132,7 @@ public class CommonFunctions {
     public boolean network(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        if (netInfo != null && netInfo.isConnected() && internetIsConnected()) {
-            return true;
-        } else {
-            return false;
-        }
+        return netInfo != null && netInfo.isConnected() && internetIsConnected();
     }
 
     public boolean internetIsConnected() {
