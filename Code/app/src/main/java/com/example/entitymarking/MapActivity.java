@@ -11,9 +11,6 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.ProgressDialog;
-import android.bluetooth.BluetoothAssignedNumbers;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
@@ -25,7 +22,6 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.Camera;
-import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,6 +37,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -52,23 +49,22 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.common.internal.service.Common;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -77,7 +73,6 @@ import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.UploadTask;
 
 import org.json.JSONArray;
@@ -134,6 +129,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             setContentView(R.layout.activity_map);
             inIt();
             SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             if (mapFragment != null) {
                 mapFragment.getMapAsync(this);
             }
@@ -399,9 +395,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void pickLocForEntity() {
-        if (ContextCompat.checkSelfPermission(MapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
+        common.closeDialog(MapActivity.this);
         if (lastKnownLatLngForWalkingMan != null) {
             latLngToSave = lastKnownLatLngForWalkingMan;
             updateMarksCount();
@@ -664,6 +658,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 super.onLocationResult(locationResult);
                 if (locationResult.getLocations().size() > 0) {
                     int latestLocationIndex = locationResult.getLocations().size() - 1;
+
                     lastKnownLatLngForWalkingMan = new LatLng(locationResult.getLocations().get(latestLocationIndex).getLatitude(),
                             locationResult.getLocations().get(latestLocationIndex).getLongitude());
 
@@ -676,8 +671,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         timerForWalkingMan();
                     }
 
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(lastKnownLatLngForWalkingMan));
-                    mMap.animateCamera(CameraUpdateFactory.zoomTo(19));
+                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                    builder.include(lastKnownLatLngForWalkingMan);
+                    if (dbColl.size() > 0) {
+                        for (LatLng ll : dbColl.get(currentLineNumber)){
+                            builder.include(ll);
+                        }
+                    }
+                    LatLngBounds bounds = builder.build();
+                    int padding = 200;
+                    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+                    mMap.animateCamera(cu);
                 }
             }
         };
@@ -708,9 +712,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMap.addPolyline(new PolylineOptions().addAll(dbColl.get(currentLineNumber))
                 .startCap(new RoundCap())
                 .endCap(new RoundCap())
-                .color(Color.parseColor("#00FF00"))
+                .color(0xff000000)
                 .jointType(JointType.ROUND)
                 .width(8));
+
+
+
     }
 
     private void drawAllLine() {
@@ -719,7 +726,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 mMap.addPolyline(new PolylineOptions().addAll(dbColl.get(i))
                         .startCap(new RoundCap())
                         .endCap(new RoundCap())
-                        .color(0xff000000)
+                        .color(Color.parseColor("#5abcff"))
                         .jointType(JointType.ROUND)
                         .width(8));
             }
@@ -855,6 +862,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         try {
             Button btn = dialogLayout.findViewById(R.id.capture_image_btn);
             btn.setOnClickListener(v -> {
+                common.setProgressDialog("","Please Wait",MapActivity.this,MapActivity.this);
                 isPass = true;
                 houseTypeSpinner.setEnabled(false);
                 alreadyInstalledCb.setEnabled(false);
@@ -881,6 +889,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 if (photo != null) {
                     pickLocForEntity();
                 } else {
+                    common.closeDialog(MapActivity.this);
                     Toast.makeText(this, "Please Retry", Toast.LENGTH_SHORT).show();
                 }
 
@@ -1157,22 +1166,28 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (!String.valueOf(snapshot.getValue()).equals(selectedWard)) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
-                    builder.setMessage("आपका असाइन किया गया वार्ड बदल गया है").setCancelable(false)
-                            .setPositiveButton("Ok", (dialog, id) -> {
-                                mMap.clear();
-                                preferences.edit().putString("assignment", String.valueOf(snapshot.getValue())).apply();
-                                selectedWard = String.valueOf(snapshot.getValue());
-                                titleTv.setText("Ward: " + selectedWard);
-                                fetchWardJson();
-                                mainCheckLocationForRealTimeRequest();
-                                dialog.cancel();
-                            })
-                            .setNegativeButton("", (dialog, i) -> {
-                                dialog.cancel();
-                            });
-                    AlertDialog alertDialog = builder.create();
-                    alertDialog.show();
+                    try {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
+                        builder.setMessage("आपका असाइन किया गया वार्ड बदल गया है").setCancelable(false)
+                                .setPositiveButton("Ok", (dialog, id) -> {
+                                    mMap.clear();
+                                    preferences.edit().putString("assignment", String.valueOf(snapshot.getValue())).apply();
+                                    selectedWard = String.valueOf(snapshot.getValue());
+                                    currentLineNumber = 0;
+                                    titleTv.setText("Ward: " + selectedWard);
+                                    fetchWardJson();
+                                    mainCheckLocationForRealTimeRequest();
+                                    dialog.cancel();
+                                })
+                                .setNegativeButton("", (dialog, i) -> {
+                                    dialog.cancel();
+                                });
+                        AlertDialog alertDialog = builder.create();
+                        alertDialog.show();
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+
                 }
             }
 
