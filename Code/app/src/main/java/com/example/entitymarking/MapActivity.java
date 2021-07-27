@@ -104,12 +104,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     String selectedWard = null, selectedCity, userId, date, cbText;
     int currentLineNumber = 0;                      // use + 1 to get currentLine;
     Spinner houseTypeSpinner;
-    TextView currentLineTv, totalMarksTv;
+    TextView currentLineTv, totalMarksTv, titleTv;
     CheckBox alreadyInstalledCb;
     Bitmap photo;
     GoogleMap mMap;
     LocationCallback locationCallback;
-    LatLng lastKnownLatLngForWalkingMan = null;
+    LatLng lastKnownLatLngForWalkingMan = null,latLngToSave = null;
     DatabaseReference rootRef;
     SharedPreferences preferences;
     List<List<LatLng>> dbColl = new ArrayList<>();
@@ -121,17 +121,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private SurfaceView surfaceView;
     Camera.PictureCallback pictureCallback;
     ChildEventListener cELOnLine;
-//    ValueEventListener cELForAssignedWard;
-//    Bundle b;
+    ValueEventListener cELForAssignedWard;
     private static final int MAIN_LOC_REQUEST = 5000, GPS_CODE_FOR_ENTITY = 501, FOCUS_AREA_SIZE = 300, PERMISSION_CODE = 1000;
-
 
     private static final String TAG = MapActivity.class.getSimpleName();
 
     @SuppressLint("SimpleDateFormat")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-//        b = savedInstanceState;
         super.onCreate(savedInstanceState);
         try {
             setContentView(R.layout.activity_map);
@@ -165,7 +162,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             setPageTitle();
             runOnUiThread(this::fetchHouseTypesAndSetSpinner);
             fetchWardJson();
-//            assignedWardCEL();
+            assignedWardCEL();
         }
     }
 
@@ -179,7 +176,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void setPageTitle() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        TextView titleTv = toolbar.findViewById(R.id.toolbar_title);
+        titleTv = toolbar.findViewById(R.id.toolbar_title);
         titleTv.setText("Ward: " + selectedWard);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
@@ -255,6 +252,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         sb.append(str);
                     }
                     prepareDB(new JSONObject(sb.toString()));
+
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 }
@@ -280,6 +278,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void prepareDB(JSONObject wardJSONObject) {
         Iterator<String> keys = wardJSONObject.keys();
+        dbColl = new ArrayList<>();
         while (keys.hasNext()) {
             String key = keys.next();
             try {
@@ -404,6 +403,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             return;
         }
         if (lastKnownLatLngForWalkingMan != null) {
+            latLngToSave = lastKnownLatLngForWalkingMan;
             updateMarksCount();
         } else {
             common.showAlertBox("Please Refresh Location", "Ok", "", MapActivity.this);
@@ -481,11 +481,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             assert currentData != null;
                             int MARKS_COUNT = Integer.parseInt(String.valueOf(currentData.getValue()));
 
-                            Log.d(TAG, "saveMarkedLocationAndUploadPhoto: Saving Started");
-
                             runOnUiThread(() -> {
                                 HashMap<String, Object> hM = new HashMap<>();
-                                hM.put("latLng", lastKnownLatLngForWalkingMan.latitude + "," + lastKnownLatLngForWalkingMan.longitude);
+                                hM.put("latLng", latLngToSave.latitude + "," + latLngToSave.longitude);
                                 hM.put("userId", userId);
                                 hM.put("alreadyInstalled", alreadyInstalledCb.isChecked());
                                 hM.put("image", MARKS_COUNT + ".jpg");
@@ -498,8 +496,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                 rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT).setValue(hM)
                                         .addOnCompleteListener(task -> {
                                             if (task.isSuccessful()) {
-                                                Log.d(TAG, "saveMarkedLocationAndUploadPhoto: Marker data saved");
-
                                                 rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/" + userId)
                                                         .runTransaction(new Transaction.Handler() {
                                                             @NonNull
@@ -515,11 +511,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                                                             @Override
                                                             public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-                                                                if (error == null) {
-                                                                    Log.d(TAG, "saveMarkedLocationAndUploadPhoto: Success 1");
-                                                                } else {
-                                                                    Log.d(TAG, "saveMarkedLocationAndUploadPhoto: failed 1");
-                                                                }
+
                                                             }
                                                         });
 
@@ -538,11 +530,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                                                             @Override
                                                             public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-                                                                if (error == null) {
-                                                                    Log.d(TAG, "saveMarkedLocationAndUploadPhoto: Success 2");
-                                                                } else {
-                                                                    Log.d(TAG, "saveMarkedLocationAndUploadPhoto: failed 2");
-                                                                }
                                                             }
                                                         });
 
@@ -561,12 +548,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                                                             @Override
                                                             public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-                                                                if (error == null) {
-                                                                    Log.d(TAG, "saveMarkedLocationAndUploadPhoto: Success 3");
-                                                                } else {
-                                                                    Log.d(TAG, "saveMarkedLocationAndUploadPhoto: failed 3");
-                                                                }
-
                                                             }
                                                         });
 
@@ -585,12 +566,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                                                             @Override
                                                             public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-                                                                if (error == null) {
-                                                                    Log.d(TAG, "saveMarkedLocationAndUploadPhoto: Success 4");
-                                                                } else {
-                                                                    Log.d(TAG, "saveMarkedLocationAndUploadPhoto: failed 4");
-                                                                }
-
                                                             }
                                                         });
 
@@ -609,12 +584,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                                                             @Override
                                                             public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-                                                                if (error == null) {
-                                                                    Log.d(TAG, "saveMarkedLocationAndUploadPhoto: Success 5");
-                                                                } else {
-                                                                    Log.d(TAG, "saveMarkedLocationAndUploadPhoto: failed 5");
-                                                                }
-
                                                             }
                                                         });
 
@@ -633,12 +602,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                                                             @Override
                                                             public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-                                                                if (error == null) {
-                                                                    Log.d(TAG, "saveMarkedLocationAndUploadPhoto: Success 6");
-                                                                } else {
-                                                                    Log.d(TAG, "saveMarkedLocationAndUploadPhoto: failed 6");
-                                                                }
-
                                                             }
                                                         });
 
@@ -657,12 +620,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                                                             @Override
                                                             public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-                                                                if (error == null) {
-                                                                    Log.d(TAG, "saveMarkedLocationAndUploadPhoto: Success 7");
-                                                                } else {
-                                                                    Log.d(TAG, "saveMarkedLocationAndUploadPhoto: failed 7");
-                                                                }
-
                                                             }
                                                         });
 
@@ -679,28 +636,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + selectedCity)
                                     .child("/MarkingSurveyImages/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT + ".jpg")
                                     .putBytes(toUpload.toByteArray())
-                                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                        @Override
-                                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                            if (taskSnapshot.getTask().isSuccessful()) {
-                                                common.closeDialog(MapActivity.this);
-                                            }
+                                    .addOnSuccessListener((UploadTask.TaskSnapshot taskSnapshot) -> {
+                                        if (taskSnapshot.getTask().isSuccessful()) {
+                                            common.closeDialog(MapActivity.this);
                                         }
-                                    }).addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    common.closeDialog(MapActivity.this);
-
-                                }
-                            }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                                @Override
-                                public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
-                                    double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
-                                    Toast.makeText(MapActivity.this, String.valueOf(progress), Toast.LENGTH_SHORT).show();
-//                                    progressDialog.setMessage("Uploaded " + (int) progress + "%");
-
-                                }
-                            });
+                                    }).addOnFailureListener(e -> common.closeDialog(MapActivity.this));
 
                         } else {
                             houseTypeSpinner.setSelection(0);
@@ -761,17 +701,29 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @SuppressLint("SetTextI18n")
     private void drawLine() {
-
         mMap.clear();
         boolToInstantiateMovingMarker = true;
         currentLineTv.setText("" + (currentLineNumber + 1) + " / " + dbColl.size());
-
+        drawAllLine();
         mMap.addPolyline(new PolylineOptions().addAll(dbColl.get(currentLineNumber))
                 .startCap(new RoundCap())
                 .endCap(new RoundCap())
-                .color(0xff000000)
+                .color(Color.parseColor("#00FF00"))
                 .jointType(JointType.ROUND)
                 .width(8));
+    }
+
+    private void drawAllLine() {
+        for (int i = 0; i < dbColl.size(); i++) {
+            if (currentLineNumber != i) {
+                mMap.addPolyline(new PolylineOptions().addAll(dbColl.get(i))
+                        .startCap(new RoundCap())
+                        .endCap(new RoundCap())
+                        .color(0xff000000)
+                        .jointType(JointType.ROUND)
+                        .width(8));
+            }
+        }
     }
 
     private void openCam() {
@@ -1026,13 +978,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
             }.execute();
         }
-
     }
 
     @Override
     protected void onPause() {
-        super.onPause();
         try {
+            super.onPause();
             if (mCamera != null) {
                 mCamera.stopPreview();
                 mCamera.release();
@@ -1046,26 +997,27 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        removeListeners();
+    }
+
+    private void removeListeners() {
         if (locationCallback != null) {
             LocationServices.getFusedLocationProviderClient(MapActivity.this).removeLocationUpdates(locationCallback);
         }
         if (cELOnLine != null) {
             rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).removeEventListener(cELOnLine);
         }
-//        if (cELForAssignedWard != null) {
-//            rootRef.child("EntityMarkingData/MarkerAppAccess/" + userId + "/assignedWard").removeEventListener(cELOnLine);
-//        }
+        if (cELForAssignedWard != null) {
+            rootRef.child("EntityMarkingData/MarkerAppAccess/" + userId + "/assignedWard").removeEventListener(cELOnLine);
+        }
     }
 
     @Override
     @SuppressLint("StaticFieldLeak")
     public void onBackPressed() {
         super.onBackPressed();
-        if (locationCallback != null) {
-            LocationServices.getFusedLocationProviderClient(MapActivity.this).removeLocationUpdates(locationCallback);
-        }
+        removeListeners();
         finish();
-
     }
 
     @Override
@@ -1199,32 +1151,36 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
-//    private void assignedWardCEL() {
-//        cELForAssignedWard = new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                Toast.makeText(MapActivity.this, snapshot.toString(), Toast.LENGTH_SHORT).show();
-//
-//                AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
-//                builder.setMessage("आपका असाइन किया गया वार्ड बदल गया है").setCancelable(false)
-//                        .setPositiveButton("Ok", (dialog, id) -> {
-//                            onDestroy();
-//                            onCreate(b);
-//                            dialog.cancel();
-//                        })
-//                        .setNegativeButton("", (dialog, i) -> {
-//                            dialog.cancel();
-//                        });
-//                AlertDialog alertDialog = builder.create();
-//                alertDialog.show();
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError error) {
-//
-//            }
-//        };
-//
-//        rootRef.child("EntityMarkingData/MarkerAppAccess/" + userId + "/assignedWard/").addValueEventListener(cELForAssignedWard);
-//    }
+    @SuppressLint({"CommitPrefEdits", "SetTextI18n"})
+    private void assignedWardCEL() {
+        cELForAssignedWard = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!String.valueOf(snapshot.getValue()).equals(selectedWard)) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
+                    builder.setMessage("आपका असाइन किया गया वार्ड बदल गया है").setCancelable(false)
+                            .setPositiveButton("Ok", (dialog, id) -> {
+                                mMap.clear();
+                                preferences.edit().putString("assignment", String.valueOf(snapshot.getValue())).apply();
+                                selectedWard = String.valueOf(snapshot.getValue());
+                                titleTv.setText("Ward: " + selectedWard);
+                                fetchWardJson();
+                                mainCheckLocationForRealTimeRequest();
+                                dialog.cancel();
+                            })
+                            .setNegativeButton("", (dialog, i) -> {
+                                dialog.cancel();
+                            });
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        };
+        rootRef.child("EntityMarkingData/MarkerAppAccess/" + userId + "/assignedWard/").addValueEventListener(cELForAssignedWard);
+    }
 }
