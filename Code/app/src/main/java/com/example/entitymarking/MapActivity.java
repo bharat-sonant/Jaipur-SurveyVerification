@@ -6,7 +6,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -104,7 +103,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     Bitmap photo;
     GoogleMap mMap;
     LocationCallback locationCallback;
-    LatLng lastKnownLatLngForWalkingMan = null,latLngToSave = null;
+    LatLng lastKnownLatLngForWalkingMan = null, latLngToSave = null;
     DatabaseReference rootRef;
     SharedPreferences preferences;
     List<List<LatLng>> dbColl = new ArrayList<>();
@@ -345,7 +344,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void fetchMarkerForLine(boolean isCloseProgressDialog) {
         totalMarksTv.setText("" + 0);
         rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).addChildEventListener(cELOnLine);
-        if (isCloseProgressDialog) common.closeDialog(MapActivity.this);
+        if (isCloseProgressDialog) {
+            if(cELOnLine != null){
+                rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber)).removeEventListener(cELOnLine);
+            }
+            common.closeDialog(MapActivity.this);
+        }
     }
 
     private void mainCheckLocationForRealTimeRequest() {
@@ -674,7 +678,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     LatLngBounds.Builder builder = new LatLngBounds.Builder();
                     builder.include(lastKnownLatLngForWalkingMan);
                     if (dbColl.size() > 0) {
-                        for (LatLng ll : dbColl.get(currentLineNumber)){
+                        for (LatLng ll : dbColl.get(currentLineNumber)) {
                             builder.include(ll);
                         }
                     }
@@ -715,7 +719,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 .color(0xff000000)
                 .jointType(JointType.ROUND)
                 .width(8));
-
 
 
     }
@@ -862,7 +865,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         try {
             Button btn = dialogLayout.findViewById(R.id.capture_image_btn);
             btn.setOnClickListener(v -> {
-                common.setProgressDialog("","Please Wait",MapActivity.this,MapActivity.this);
+                common.setProgressDialog("", "Please Wait", MapActivity.this, MapActivity.this);
                 isPass = true;
                 houseTypeSpinner.setEnabled(false);
                 alreadyInstalledCb.setEnabled(false);
@@ -948,6 +951,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     }
                 }
             }.execute();
+        } else {
+            common.showAlertBox("Line does not exist","Ok","",MapActivity.this);
         }
 
     }
@@ -986,6 +991,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     }
                 }
             }.execute();
+        } else {
+            common.showAlertBox("Line does not exist","Ok","",MapActivity.this);
         }
     }
 
@@ -1017,7 +1024,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).removeEventListener(cELOnLine);
         }
         if (cELForAssignedWard != null) {
-            rootRef.child("EntityMarkingData/MarkerAppAccess/" + userId + "/assignedWard").removeEventListener(cELOnLine);
+            rootRef.child("EntityMarkingData/MarkerAppAccess/" + userId + "/assignedWard").removeEventListener(cELForAssignedWard);
         }
     }
 
@@ -1057,43 +1064,54 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             EditText lineNumberEt = dialogLayout.findViewById(R.id.move_to_line_et);
             Button btn = dialogLayout.findViewById(R.id.move_to_line_confirm);
             btn.setOnClickListener(v -> {
-                if (lineNumberEt != null && lineNumberEt.getText().toString().trim().length() > 0) {
-                    int lineNumber = Integer.parseInt(lineNumberEt.getText().toString());
-                    if ((currentLineNumber + 1) != lineNumber) {
-                        if ((lineNumber - 1) >= 0 && lineNumber <= dbColl.size()) {
-                            new AsyncTask<Void, Void, Boolean>() {
-                                @Override
-                                protected void onPreExecute() {
-                                    super.onPreExecute();
-                                    common.setProgressDialog("Please wait...", " ", MapActivity.this, MapActivity.this);
-                                }
-
-                                @Override
-                                protected Boolean doInBackground(Void... p) {
-                                    return common.network(MapActivity.this);
-                                }
-
-                                @Override
-                                protected void onPostExecute(Boolean result) {
-                                    if (result) {
-                                        dialog.cancel();
-                                        currentLineNumber = lineNumber - 1;
-                                        drawLine();
-                                        fetchMarkerForLine(true);
-                                    } else {
-                                        common.closeDialog(MapActivity.this);
-                                        common.showAlertBox("Please Connect to internet", "Ok", "", MapActivity.this);
+                try {
+                    if (lineNumberEt != null && lineNumberEt.getText().toString().trim().length() > 0) {
+                        int lineNumber = Integer.parseInt(lineNumberEt.getText().toString());
+                        if ((currentLineNumber + 1) != lineNumber) {
+                            if ((lineNumber - 1) >= 0 && lineNumber <= dbColl.size()) {
+                                new AsyncTask<Void, Void, Boolean>() {
+                                    @Override
+                                    protected void onPreExecute() {
+                                        super.onPreExecute();
+                                        common.setProgressDialog("Please wait...", " ", MapActivity.this, MapActivity.this);
                                     }
-                                }
-                            }.execute();
+
+                                    @Override
+                                    protected Boolean doInBackground(Void... p) {
+                                        return common.network(MapActivity.this);
+                                    }
+
+                                    @Override
+                                    protected void onPostExecute(Boolean result) {
+                                        if (result) {
+                                            dialog.cancel();
+                                            currentLineNumber = lineNumber - 1;
+                                            drawLine();
+                                            fetchMarkerForLine(true);
+                                        } else {
+                                            common.closeDialog(MapActivity.this);
+                                            common.showAlertBox("Please Connect to internet", "Ok", "", MapActivity.this);
+                                        }
+                                    }
+                                }.execute();
+                            } else {
+                                common.showAlertBox("Please Enter a valid line number", "Ok", "", MapActivity.this);
+                                lineNumberEt.setText("");
+                            }
                         } else {
-                            common.showAlertBox("Please Enter a valid line number", "Ok", "", MapActivity.this);
+                            common.showAlertBox("Already on same line", "Ok", "", MapActivity.this);
+                            lineNumberEt.setText("");
                         }
                     } else {
-                        common.showAlertBox("Already on same line", "Ok", "", MapActivity.this);
+                        common.showAlertBox("Please Enter a valid line number", "Ok", "", MapActivity.this);
+                        assert lineNumberEt != null;
+                        lineNumberEt.setText("");
                     }
-                } else {
+                } catch (Exception e) {
+                    e.printStackTrace();
                     common.showAlertBox("Please Enter a valid line number", "Ok", "", MapActivity.this);
+                    assert lineNumberEt != null;
+                    lineNumberEt.setText("");
                 }
             });
             Button closeBtn = dialogLayout.findViewById(R.id.move_to_line_cancel);
@@ -1184,7 +1202,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                 });
                         AlertDialog alertDialog = builder.create();
                         alertDialog.show();
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
 
