@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/top_corner"
+        android:gravity="center"
+        android:paddingLeft="16dp"
+        android:paddingTop="20dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="8dp"
+        android:text="Proceed to save"
+        android:textColor="@color/black"
+        android:textSize="18dp" />
+
+    <ImageView
+        android:id="@+id/image_preview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/lower_corner"
+        android:orientation="horizontal"
+        android:paddingLeft="16dp"
+        android:paddingTop="10dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="10dp"
+        android:weightSum="100">
+
+        <Button
+            android:id="@+id/close_preview_image_btn"
+            android:layout_width="0dp"
+            android:layout_height="45dp"
+            android:layout_marginRight="8dp"
+            android:layout_weight="50"
+            android:background="@drawable/cancel_btn_background"
+            android:text="Cancel"
+            android:textAllCaps="false"
+            android:textColor="@color/colorAccent"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/proceed_preview_image_btn"
+            android:layout_width="0dp"
+            android:layout_height="45dp"
+            android:layout_marginLeft="8dp"
+            android:layout_weight="50"
+            android:background="@drawable/capture_btn_background"
+            android:text="Proceed"
+            android:textAllCaps="false"
+            android:textColor="#fff"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -40,8 +40,9 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -98,8 +99,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     String selectedWard = null, selectedCity, userId, date, cbText;
     int currentLineNumber = 0;                      // use + 1 to get currentLine;
     Spinner houseTypeSpinner;
-    TextView currentLineTv, totalMarksTv, titleTv;
-    CheckBox alreadyInstalledCb;
+    TextView currentLineTv, totalMarksTv, titleTv, rgHeadingTv;
+    RadioButton isSurveyedTrue, isSurveyedFalse;
     Bitmap photo;
     GoogleMap mMap;
     LocationCallback locationCallback;
@@ -143,7 +144,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         rootRef = common.getDatabaseRef(this);
         houseTypeSpinner = findViewById(R.id.house_type_spinner);
         totalMarksTv = findViewById(R.id.total_marks_tv);
-        alreadyInstalledCb = findViewById(R.id.already_installed_cb);
+        rgHeadingTv = findViewById(R.id.radio_group_heading_tv);
+        isSurveyedTrue = findViewById(R.id.is_surveyed_true_rb);
+        isSurveyedFalse = findViewById(R.id.is_surveyed_false_rb);
         date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
         preferences = getSharedPreferences("LoginDetails", MODE_PRIVATE);
@@ -151,7 +154,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         selectedCity = preferences.getString("storagePath", "");
         userId = preferences.getString("userId", "");
         cbText = preferences.getString("alreadyInstalledCheckBoxText", getResources().getString(R.string.already_installed_cb_text));
-        alreadyInstalledCb.setText(cbText);
+        rgHeadingTv.setText(cbText);
+        setRB();
         if (selectedWard != null) {
             common.setProgressDialog("Please Wait", "", MapActivity.this, MapActivity.this);
             setPageTitle();
@@ -159,6 +163,26 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             fetchWardJson();
             assignedWardCEL();
         }
+    }
+
+    private void setRB() {
+        isSurveyedFalse.setOnClickListener(view -> {
+            isSurveyedFalse.setChecked(true);
+            isSurveyedTrue.setChecked(false);
+        });
+        isSurveyedTrue.setOnClickListener(view -> {
+            isSurveyedFalse.setChecked(false);
+            isSurveyedTrue.setChecked(true);
+        });
+    }
+
+    private void setBothRBUnchecked() {
+        isSurveyedFalse.setChecked(false);
+        isSurveyedTrue.setChecked(false);
+    }
+
+    private boolean checkWhichRBisChecked() {
+        return isSurveyedTrue.isChecked();
     }
 
     @Override
@@ -345,7 +369,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         totalMarksTv.setText("" + 0);
         rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).addChildEventListener(cELOnLine);
         if (isCloseProgressDialog) {
-            if(cELOnLine != null){
+            if (cELOnLine != null) {
                 rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber)).removeEventListener(cELOnLine);
             }
             common.closeDialog(MapActivity.this);
@@ -410,51 +434,58 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @SuppressLint("StaticFieldLeak")
     private void updateMarksCount() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
-        builder.setMessage("Data Collected successfully.\nProceed to Save.").setCancelable(false)
-                .setPositiveButton("Proceed", (dialog, id) -> {
+        View dialogLayout = MapActivity.this.getLayoutInflater().inflate(R.layout.custom_image_preview, null);
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapActivity.this).setView(dialogLayout).setCancelable(false);
+        AlertDialog dialog = alertDialog.create();
 
-                    new AsyncTask<Void, Void, Boolean>() {
-                        @Override
-                        protected void onPreExecute() {
-                            super.onPreExecute();
-                            common.setProgressDialog("", "Saving", MapActivity.this, MapActivity.this);
+        ImageView imageView = dialogLayout.findViewById(R.id.image_preview);
+        imageView.setImageBitmap(photo);
+
+        Button btn = dialogLayout.findViewById(R.id.proceed_preview_image_btn);
+        btn.setOnClickListener(v -> {
+            new AsyncTask<Void, Void, Boolean>() {
+                @Override
+                protected void onPreExecute() {
+                    super.onPreExecute();
+                    common.setProgressDialog("", "Saving", MapActivity.this, MapActivity.this);
+                }
+
+                @Override
+                protected Boolean doInBackground(Void... p) {
+                    return common.network(MapActivity.this);
+                }
+
+                @Override
+                protected void onPostExecute(Boolean result) {
+                    common.closeDialog(MapActivity.this);
+                    if (result) {
+                        try {
+                            saveMarkedLocationAndUploadPhoto();
+                        } catch (Exception e) {
+                            Log.d(TAG, "onPostExecute: " + e.toString());
                         }
 
-                        @Override
-                        protected Boolean doInBackground(Void... p) {
-                            return common.network(MapActivity.this);
-                        }
+                    } else {
+                        isPass = true;
+                        houseTypeSpinner.setSelection(0);
+                        common.showAlertBox("Please Connect to internet", "Ok", "", MapActivity.this);
+                    }
+                }
+            }.execute();
+            dialog.dismiss();
 
-                        @Override
-                        protected void onPostExecute(Boolean result) {
-                            common.closeDialog(MapActivity.this);
-                            if (result) {
-                                try {
-                                    saveMarkedLocationAndUploadPhoto();
-                                } catch (Exception e) {
-                                    Log.d(TAG, "onPostExecute: " + e.toString());
-                                }
+        });
+        Button closeBtn = dialogLayout.findViewById(R.id.close_preview_image_btn);
+        closeBtn.setOnClickListener(v -> {
+            houseTypeSpinner.setSelection(0);
+            setBothRBUnchecked();
+            dialog.dismiss();
+        });
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.show();
 
-                            } else {
-                                isPass = true;
-                                houseTypeSpinner.setSelection(0);
-                                common.showAlertBox("Please Connect to internet", "Ok", "", MapActivity.this);
-                            }
-                        }
-                    }.execute();
-
-                    dialog.cancel();
-                })
-                .setNegativeButton("Cancel", (dialog, i) -> {
-                    houseTypeSpinner.setSelection(0);
-                    dialog.cancel();
-                });
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
         captureClickControl = true;
         houseTypeSpinner.setEnabled(true);
-        alreadyInstalledCb.setEnabled(true);
     }
 
     @SuppressLint({"SimpleDateFormat", "SetTextI18n"})
@@ -483,13 +514,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                 HashMap<String, Object> hM = new HashMap<>();
                                 hM.put("latLng", latLngToSave.latitude + "," + latLngToSave.longitude);
                                 hM.put("userId", userId);
-                                hM.put("alreadyInstalled", alreadyInstalledCb.isChecked());
+                                hM.put("alreadyInstalled", checkWhichRBisChecked());
                                 hM.put("image", MARKS_COUNT + ".jpg");
                                 hM.put("date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
                                 hM.put("houseType", houseDataHashMap.get(houseTypeSpinner.getSelectedItem()));
 
                                 houseTypeSpinner.setSelection(0);
-                                alreadyInstalledCb.setChecked(false);
+                                setBothRBUnchecked();
 
                                 rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT).setValue(hM)
                                         .addOnCompleteListener(task -> {
@@ -645,7 +676,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             common.closeDialog(MapActivity.this);
                             common.showAlertBox("Please Connect to internet", "Ok", "", MapActivity.this);
                         }
-
                     }
                 });
     }
@@ -868,7 +898,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 common.setProgressDialog("", "Please Wait", MapActivity.this, MapActivity.this);
                 isPass = true;
                 houseTypeSpinner.setEnabled(false);
-                alreadyInstalledCb.setEnabled(false);
                 if (captureClickControl) {
                     captureClickControl = false;
                     mCamera.takePicture(null, null, null, pictureCallback);
@@ -877,6 +906,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             Button closeBtn = dialogLayout.findViewById(R.id.close_image_btn);
             closeBtn.setOnClickListener(v -> {
                 houseTypeSpinner.setSelection(0);
+                setBothRBUnchecked();
                 dialog.cancel();
                 isPass = true;
             });
@@ -952,15 +982,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
             }.execute();
         } else {
-            common.showAlertBox("Line does not exist","Ok","",MapActivity.this);
+            common.showAlertBox("Line does not exist", "Ok", "", MapActivity.this);
         }
-
     }
 
     public void onSaveClick(View view) {
         if (isPass) {
             isPass = false;
-            checkGpsForEntity();
+            if (isSurveyedTrue.isChecked() || isSurveyedFalse.isChecked()) {
+                checkGpsForEntity();
+            } else {
+                isPass = true;
+                setBothRBUnchecked();
+                houseTypeSpinner.setSelection(0);
+                common.showAlertBox("Please Select yes or no option", "ok", "", MapActivity.this);
+            }
         }
     }
 
@@ -992,7 +1028,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
             }.execute();
         } else {
-            common.showAlertBox("Line does not exist","Ok","",MapActivity.this);
+            common.showAlertBox("Line does not exist", "Ok", "", MapActivity.this);
         }
     }
 
@@ -1142,6 +1178,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     showAlertDialog();
                 } else {
                     houseTypeSpinner.setSelection(0);
+                    setBothRBUnchecked();
                     isPass = true;
                     Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
                 }
@@ -1161,6 +1198,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 } else {
                     isPass = true;
                     houseTypeSpinner.setSelection(0);
+                    setBothRBUnchecked();
                     Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
                 }
             } else if (requestCode == MAIN_LOC_REQUEST) {
@@ -1216,4 +1254,5 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         };
         rootRef.child("EntityMarkingData/MarkerAppAccess/" + userId + "/assignedWard/").addValueEventListener(cELForAssignedWard);
     }
+
 }
