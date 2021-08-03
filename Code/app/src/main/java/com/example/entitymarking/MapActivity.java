@@ -519,9 +519,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                 hM.put("date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
                                 hM.put("houseType", houseDataHashMap.get(houseTypeSpinner.getSelectedItem()));
 
-                                houseTypeSpinner.setSelection(0);
-                                setBothRBUnchecked();
-
                                 rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT).setValue(hM)
                                         .addOnCompleteListener(task -> {
                                             if (task.isSuccessful()) {
@@ -651,6 +648,29 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                                             public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
                                                             }
                                                         });
+
+                                                if (checkWhichRBisChecked()) {
+                                                    rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard + "/alreadyInstalled")
+                                                            .runTransaction(new Transaction.Handler() {
+                                                                @NonNull
+                                                                @Override
+                                                                public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                                                    if (currentData.getValue() == null) {
+                                                                        currentData.setValue(1);
+                                                                    } else {
+                                                                        currentData.setValue((Long) currentData.getValue() + 1);
+                                                                    }
+                                                                    return Transaction.success(currentData);
+                                                                }
+
+                                                                @Override
+                                                                public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                                                                }
+                                                            });
+                                                }
+
+                                                houseTypeSpinner.setSelection(0);
+                                                setBothRBUnchecked();
 
 
                                             } else {
@@ -1151,9 +1171,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
             });
             Button closeBtn = dialogLayout.findViewById(R.id.move_to_line_cancel);
-            closeBtn.setOnClickListener(v -> {
-                dialog.cancel();
-            });
+            closeBtn.setOnClickListener(v -> dialog.cancel());
             dialog.show();
         } catch (Exception e) {
             e.printStackTrace();
@@ -1235,9 +1253,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                     mainCheckLocationForRealTimeRequest();
                                     dialog.cancel();
                                 })
-                                .setNegativeButton("", (dialog, i) -> {
-                                    dialog.cancel();
-                                });
+                                .setNegativeButton("", (dialog, i) -> dialog.cancel());
                         AlertDialog alertDialog = builder.create();
                         alertDialog.show();
                     } catch (Exception e) {
