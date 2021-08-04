@@ -21,6 +21,8 @@ import android.os.SystemClock;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.dynamicanimation.animation.SpringAnimation;
 
@@ -31,8 +33,12 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -259,6 +265,44 @@ public class CommonFunctions {
                 break;
 
         }
+    }
+
+    public void increaseCountByOne(DatabaseReference tempRef) {
+        tempRef.runTransaction(new Transaction.Handler() {
+            @NonNull
+            @Override
+            public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                if (currentData.getValue() == null) {
+                    currentData.setValue(1);
+                } else {
+                    currentData.setValue((Long) currentData.getValue() + 1);
+                }
+                return Transaction.success(currentData);
+            }
+
+            @Override
+            public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+            }
+        });
+    }
+
+    public void decCountByOne(DatabaseReference tempRef) {
+        tempRef.runTransaction(new Transaction.Handler() {
+            @NonNull
+            @Override
+            public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                if (currentData.getValue() == null) {
+                    currentData.setValue("");
+                } else {
+                    currentData.setValue((Long) currentData.getValue() - 1);
+                }
+                return Transaction.success(currentData);
+            }
+
+            @Override
+            public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+            }
+        });
     }
 
 }

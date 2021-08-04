@@ -3,10 +3,13 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/cam_icon.xml" value="0.1962962962962963" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/view_border.xml" value="0.2265625" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/layout/activity_map.xml" value="0.21041666666666667" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/layout/custom_camera_alertbox.xml" value="0.21041666666666667" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/layout/custom_image_preview.xml" value="0.21041666666666667" />
+        <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/layout/form_dialog_for_rejected_marker.xml" value="0.21041666666666667" />
+        <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/layout/move_to_line_view.xml" value="0.21041666666666667" />
       </map>
     </option>
   </component>
