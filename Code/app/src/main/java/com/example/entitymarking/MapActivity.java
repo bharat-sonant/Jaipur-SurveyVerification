@@ -22,7 +22,6 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.Camera;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -70,7 +69,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -478,11 +476,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         });
     }
 
-    private void checkGPSForModification() {
-
-    }
-
-
     private void pickLocForEntity() {
         common.closeDialog(MapActivity.this);
         if (lastKnownLatLngForWalkingMan != null) {
@@ -507,7 +500,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 @Override
                 protected void onPreExecute() {
                     super.onPreExecute();
-                    common.setProgressDialog("", "Saving", MapActivity.this, MapActivity.this);
+                    common.setProgressDialog("", "checking internet", MapActivity.this, MapActivity.this);
                 }
 
                 @Override
@@ -550,26 +543,28 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @SuppressLint({"SimpleDateFormat", "SetTextI18n"})
     private void saveMarkedLocationAndUploadPhoto() {
-        rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).child("marksCount")
-                .runTransaction(new Transaction.Handler() {
-                    @NonNull
-                    @Override
-                    public Transaction.Result doTransaction(@NonNull MutableData currentData) {
-                        if (currentData.getValue() == null) {
-                            currentData.setValue(1);
-                        } else {
-                            currentData.setValue((Long) currentData.getValue() + 1);
+        if (photo != null) {
+            common.closeDialog(MapActivity.this);
+            common.setProgressDialog("", "Saving data", MapActivity.this, MapActivity.this);
+            rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).child("marksCount")
+                    .runTransaction(new Transaction.Handler() {
+                        @NonNull
+                        @Override
+                        public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                            if (currentData.getValue() == null) {
+                                currentData.setValue(1);
+                            } else {
+                                currentData.setValue((Long) currentData.getValue() + 1);
+                            }
+                            return Transaction.success(currentData);
                         }
-                        return Transaction.success(currentData);
-                    }
 
-                    @Override
-                    public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-                        if (error == null) {
-                            assert currentData != null;
-                            int MARKS_COUNT = Integer.parseInt(String.valueOf(currentData.getValue()));
+                        @Override
+                        public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+                            if (error == null) {
+                                assert currentData != null;
+                                int MARKS_COUNT = Integer.parseInt(String.valueOf(currentData.getValue()));
 
-                            runOnUiThread(() -> {
                                 HashMap<String, Object> hM = new HashMap<>();
                                 hM.put("latLng", lastKnownLatLngForWalkingMan.latitude + "," + lastKnownLatLngForWalkingMan.longitude);
                                 hM.put("userId", userId);
@@ -578,48 +573,50 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                 hM.put("date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
                                 hM.put("houseType", houseDataHashMap.get(houseTypeSpinner.getSelectedItem()));
 
-                                rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT).setValue(hM)
-                                        .addOnCompleteListener(task -> {
-                                            if (task.isSuccessful()) {
-                                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/" + userId + "/marked"));
-                                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/EmployeeWise/" + userId + "/" + selectedWard + "/marked"));
-                                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/" + selectedWard + "/marked"));
-                                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/EmployeeWise/" + userId + "/totalMarked"));
-                                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/totalMarked"));
-                                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/totalMarked"));
-                                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard + "/marked"));
-                                                if (checkWhichRBisChecked()) {
-                                                    common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard + "/alreadyInstalled"));
+                                rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT).setValue(hM);
+                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/" + userId + "/marked"));
+                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/EmployeeWise/" + userId + "/" + selectedWard + "/marked"));
+                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/" + selectedWard + "/marked"));
+                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/EmployeeWise/" + userId + "/totalMarked"));
+                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/totalMarked"));
+                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/totalMarked"));
+                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard + "/marked"));
+                                if (checkWhichRBisChecked()) {
+                                    common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard + "/alreadyInstalled"));
+                                }
+                                houseTypeSpinner.setSelection(0);
+                                setBothRBUnchecked();
+
+                                try {
+                                    ByteArrayOutputStream toUpload = new ByteArrayOutputStream();
+                                    photo.compress(Bitmap.CompressFormat.JPEG, 80, toUpload);
+                                    FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + selectedCity)
+                                            .child("/MarkingSurveyImages/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT + ".jpg")
+                                            .putBytes(toUpload.toByteArray())
+                                            .addOnSuccessListener((UploadTask.TaskSnapshot taskSnapshot) -> {
+                                                if (taskSnapshot.getTask().isSuccessful()) {
+                                                    photo = null;
+                                                    enableZoom = true;
+                                                    common.closeDialog(MapActivity.this);
                                                 }
-                                                houseTypeSpinner.setSelection(0);
-                                                setBothRBUnchecked();
-                                            } else {
-                                                common.closeDialog(MapActivity.this);
-                                                common.showAlertBox("Please Retry", "Ok", "", MapActivity.this);
-                                            }
-                                        });
-                            });
+                                            }).addOnFailureListener(e -> common.closeDialog(MapActivity.this));
+                                } catch (Exception e) {
+                                    photo = null;
+                                    enableZoom = true;
+                                    common.closeDialog(MapActivity.this);
+                                    e.printStackTrace();
+                                }
 
-                            ByteArrayOutputStream toUpload = new ByteArrayOutputStream();
-                            photo.compress(Bitmap.CompressFormat.JPEG, 80, toUpload);
-                            FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + selectedCity)
-                                    .child("/MarkingSurveyImages/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT + ".jpg")
-                                    .putBytes(toUpload.toByteArray())
-                                    .addOnSuccessListener((UploadTask.TaskSnapshot taskSnapshot) -> {
-                                        if (taskSnapshot.getTask().isSuccessful()) {
-                                            photo = null;
-                                            enableZoom = true;
-                                            common.closeDialog(MapActivity.this);
-                                        }
-                                    }).addOnFailureListener(e -> common.closeDialog(MapActivity.this));
-
-                        } else {
-                            houseTypeSpinner.setSelection(0);
-                            common.closeDialog(MapActivity.this);
-                            common.showAlertBox("Please Connect to internet", "Ok", "", MapActivity.this);
+                            } else {
+                                houseTypeSpinner.setSelection(0);
+                                common.closeDialog(MapActivity.this);
+                                common.showAlertBox("Please Connect to internet", "Ok", "", MapActivity.this);
+                            }
                         }
-                    }
-                });
+                    });
+        } else {
+            Toast.makeText(MapActivity.this, "Please Click Picture Again", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void startCaptureLocForWalkingMan() {
@@ -1174,11 +1171,24 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 circularProgressDrawable.setCenterRadius(30f);
                 circularProgressDrawable.start();
                 FirebaseStorage.getInstance()
-                        .getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + selectedCity+"/MarkingSurveyImages/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + mdm.getImageName()).getDownloadUrl()
+                        .getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + selectedCity + "/MarkingSurveyImages/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + mdm.getImageName())
+                        .getDownloadUrl()
                         .addOnSuccessListener(uri -> Glide.with(MapActivity.this)
                                 .load(uri)
                                 .placeholder(circularProgressDrawable)
-                                .into(imageViewForRejectedMarker));
+                                .into(imageViewForRejectedMarker))
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        try {
+                            Toast.makeText(MapActivity.this, "Image Not Available ", Toast.LENGTH_SHORT).show();
+                            imageViewForRejectedMarker.setImageResource(R.drawable.img_not_available);
+                        } catch (Exception exc){
+                            exc.printStackTrace();
+                        }
+
+                    }
+                });
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -1221,22 +1231,35 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                     common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/totalModified"));
                                     common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/totalModified"));
 
-                                    ByteArrayOutputStream toUpload = new ByteArrayOutputStream();
-                                    photo.compress(Bitmap.CompressFormat.JPEG, 80, toUpload);
-                                    FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + selectedCity)
-                                            .child("/MarkingSurveyImages/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + mdm.getImageName())
-                                            .putBytes(toUpload.toByteArray())
-                                            .addOnSuccessListener((UploadTask.TaskSnapshot taskSnapshot) -> {
-                                                if (taskSnapshot.getTask().isSuccessful()) {
-                                                    dialogForModification.dismiss();
-                                                    photo = null;
-                                                    enableZoom = true;
-                                                    common.closeDialog(MapActivity.this);
-                                                    marker.setIcon(common.BitmapFromVector(MapActivity.this, R.drawable.gharicon));
-                                                    marker.setPosition(lastKnownLatLngForWalkingMan);
-                                                    mDMMap.remove(marker.getPosition());
-                                                }
-                                            }).addOnFailureListener(e -> common.closeDialog(MapActivity.this));
+                                    try {
+                                        ByteArrayOutputStream toUpload = new ByteArrayOutputStream();
+                                        photo.compress(Bitmap.CompressFormat.JPEG, 80, toUpload);
+                                        FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + selectedCity)
+                                                .child("/MarkingSurveyImages/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + mdm.getImageName())
+                                                .putBytes(toUpload.toByteArray())
+                                                .addOnSuccessListener((UploadTask.TaskSnapshot taskSnapshot) -> {
+                                                    if (taskSnapshot.getTask().isSuccessful()) {
+                                                        dialogForModification.dismiss();
+                                                        photo = null;
+                                                        enableZoom = true;
+                                                        common.closeDialog(MapActivity.this);
+                                                        marker.setIcon(common.BitmapFromVector(MapActivity.this, R.drawable.gharicon));
+                                                        marker.setPosition(lastKnownLatLngForWalkingMan);
+                                                        mDMMap.remove(marker.getPosition());
+                                                    }
+                                                }).addOnFailureListener(e -> common.closeDialog(MapActivity.this));
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        dialogForModification.dismiss();
+                                        photo = null;
+                                        enableZoom = true;
+                                        common.closeDialog(MapActivity.this);
+                                        marker.setIcon(common.BitmapFromVector(MapActivity.this, R.drawable.gharicon));
+                                        marker.setPosition(lastKnownLatLngForWalkingMan);
+                                        mDMMap.remove(marker.getPosition());
+                                    }
+
+
                                 } else {
                                     Toast.makeText(MapActivity.this, "Please Click New Image", Toast.LENGTH_SHORT).show();
                                 }
@@ -1309,7 +1332,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
                     mainCheckLocationForRealTimeRequest();
                 }
-            } else if (requestCode == GPS_CODE_FOR_MODIFICATION){
+            } else if (requestCode == GPS_CODE_FOR_MODIFICATION) {
                 if (resultCode == RESULT_OK) {
 
                 } else {
