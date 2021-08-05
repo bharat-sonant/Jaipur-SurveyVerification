@@ -104,7 +104,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     ImageView imageViewForRejectedMarker;
     int currentLineNumber = 0;                      // use + 1 to get currentLine;
     Spinner houseTypeSpinner;
-    TextView currentLineTv, totalMarksTv, titleTv, rgHeadingTv;
+    TextView currentLineTv, totalMarksTv, titleTv, rgHeadingTv, dateTimeTv;
     RadioButton isSurveyedTrue, isSurveyedFalse;
     Bitmap photo;
     GoogleMap mMap;
@@ -163,6 +163,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         rgHeadingTv = findViewById(R.id.radio_group_heading_tv);
         isSurveyedTrue = findViewById(R.id.is_surveyed_true_rb);
         isSurveyedFalse = findViewById(R.id.is_surveyed_false_rb);
+        dateTimeTv = findViewById(R.id.date_and_time_tv);
         date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
         preferences = getSharedPreferences("LoginDetails", MODE_PRIVATE);
@@ -178,6 +179,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             runOnUiThread(this::fetchHouseTypesAndSetSpinner);
             fetchWardJson();
             assignedWardCEL();
+            lastScanTimeVEL();
+            checkVersionForTheApplication();
         }
     }
 
@@ -562,32 +565,36 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         @Override
                         public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
                             if (error == null) {
-                                assert currentData != null;
-                                int MARKS_COUNT = Integer.parseInt(String.valueOf(currentData.getValue()));
-
-                                HashMap<String, Object> hM = new HashMap<>();
-                                hM.put("latLng", lastKnownLatLngForWalkingMan.latitude + "," + lastKnownLatLngForWalkingMan.longitude);
-                                hM.put("userId", userId);
-                                hM.put("alreadyInstalled", checkWhichRBisChecked());
-                                hM.put("image", MARKS_COUNT + ".jpg");
-                                hM.put("date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
-                                hM.put("houseType", houseDataHashMap.get(houseTypeSpinner.getSelectedItem()));
-
-                                rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT).setValue(hM);
-                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/" + userId + "/marked"));
-                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/EmployeeWise/" + userId + "/" + selectedWard + "/marked"));
-                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/" + selectedWard + "/marked"));
-                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/EmployeeWise/" + userId + "/totalMarked"));
-                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/totalMarked"));
-                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/totalMarked"));
-                                common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard + "/marked"));
-                                if (checkWhichRBisChecked()) {
-                                    common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard + "/alreadyInstalled"));
-                                }
-                                houseTypeSpinner.setSelection(0);
-                                setBothRBUnchecked();
-
                                 try {
+                                    assert currentData != null;
+                                    int MARKS_COUNT = Integer.parseInt(String.valueOf(currentData.getValue()));
+
+                                    HashMap<String, Object> hM = new HashMap<>();
+                                    hM.put("latLng", lastKnownLatLngForWalkingMan.latitude + "," + lastKnownLatLngForWalkingMan.longitude);
+                                    hM.put("userId", userId);
+                                    hM.put("alreadyInstalled", checkWhichRBisChecked());
+                                    hM.put("image", MARKS_COUNT + ".jpg");
+                                    hM.put("date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
+                                    hM.put("houseType", houseDataHashMap.get(houseTypeSpinner.getSelectedItem()));
+
+                                    rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT).setValue(hM);
+                                    rootRef.child("EntityMarkingData/LastScanTime/Surveyor").child(userId).setValue(new SimpleDateFormat("dd MMM HH:mm:ss").format(new Date()));
+                                    rootRef.child("EntityMarkingData/LastScanTime/Ward").child(selectedWard).setValue(new SimpleDateFormat("dd MMM HH:mm:ss").format(new Date()));
+                                    common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/" + userId + "/marked"));
+                                    common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/EmployeeWise/" + userId + "/" + selectedWard + "/marked"));
+                                    common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/" + selectedWard + "/marked"));
+                                    common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/EmployeeWise/" + userId + "/totalMarked"));
+                                    common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/totalMarked"));
+                                    common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/totalMarked"));
+                                    common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard + "/marked"));
+                                    if (checkWhichRBisChecked()) {
+                                        common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard + "/alreadyInstalled"));
+                                    }
+                                    houseTypeSpinner.setSelection(0);
+                                    setBothRBUnchecked();
+                                    dateTimeTv.setText(new SimpleDateFormat("dd MMM HH:mm:ss").format(new Date()));
+
+
                                     ByteArrayOutputStream toUpload = new ByteArrayOutputStream();
                                     photo.compress(Bitmap.CompressFormat.JPEG, 80, toUpload);
                                     FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + selectedCity)
@@ -1177,18 +1184,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                 .load(uri)
                                 .placeholder(circularProgressDrawable)
                                 .into(imageViewForRejectedMarker))
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        try {
-                            Toast.makeText(MapActivity.this, "Image Not Available ", Toast.LENGTH_SHORT).show();
-                            imageViewForRejectedMarker.setImageResource(R.drawable.img_not_available);
-                        } catch (Exception exc){
-                            exc.printStackTrace();
-                        }
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                try {
+                                    Toast.makeText(MapActivity.this, "Image Not Available ", Toast.LENGTH_SHORT).show();
+                                    imageViewForRejectedMarker.setImageResource(R.drawable.img_not_available);
+                                } catch (Exception exc) {
+                                    exc.printStackTrace();
+                                }
 
-                    }
-                });
+                            }
+                        });
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -1381,6 +1388,72 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         };
         rootRef.child("EntityMarkingData/MarkerAppAccess/" + userId + "/assignedWard/").addValueEventListener(cELForAssignedWard);
+    }
+
+    private void lastScanTimeVEL() {
+        rootRef.child("EntityMarkingData/LastScanTime/Surveyor/" + userId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.getValue() != null) {
+                    dateTimeTv.setText(snapshot.getValue().toString());
+                } else {
+                    dateTimeTv.setText("---");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void checkVersionForTheApplication() {
+        rootRef.child("Settings/LatestVersions/entityMarking").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.getValue() != null) {
+                    try {
+                        String version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+                        if (!version.equalsIgnoreCase(snapshot.getValue().toString())) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
+                            builder.setMessage("Version Expired").setCancelable(false)
+                                    .setPositiveButton("Ok", (dialog, id) -> {
+                                        finish();
+                                        dialog.cancel();
+                                    })
+                                    .setNegativeButton("", (dialog, i) -> {
+                                        dialog.cancel();
+                                        finish();
+                                    });
+                            AlertDialog alertDialog = builder.create();
+                            alertDialog.show();
+                        }
+                    } catch (PackageManager.NameNotFoundException e) {
+                        e.printStackTrace();
+                    }
+
+                } else {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
+                    builder.setMessage("Version Expired").setCancelable(false)
+                            .setPositiveButton("Ok", (dialog, id) -> {
+                                finish();
+                                dialog.cancel();
+                            })
+                            .setNegativeButton("", (dialog, i) -> {
+                                dialog.cancel();
+                                finish();
+                            });
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
 }
