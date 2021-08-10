@@ -104,6 +104,9 @@ public class MainActivity extends AppCompatActivity {
         } else if (city.equals("reengus")) {
             dbPath = "https://dtdreengus.firebaseio.com/";
             storagePath = "Reengus";
+        } else if (city.equals("shahpura")) {
+            dbPath = "https://dtdshahpura.firebaseio.com/";
+            storagePath = "Shahpura";
         } else {
             dbPath = "https://dtdnavigator.firebaseio.com/";
             storagePath = "Sikar";
@@ -148,6 +151,9 @@ public class MainActivity extends AppCompatActivity {
                         super.onLocationResult(locationResult);
                         Location finalLocation = locationResult.getLastLocation();
                         LocationServices.getFusedLocationProviderClient(MainActivity.this).removeLocationUpdates(this);
+
+                        finalLocation.setLatitude(27.384374);
+                        finalLocation.setLongitude(75.9610205);
                         if (finalLocation != null) {
                             try {
                                 String address = String.valueOf(new Geocoder(MainActivity.this, Locale.getDefault())
@@ -165,6 +171,9 @@ public class MainActivity extends AppCompatActivity {
                                             break;
                                         case "reengus":
                                             setDatabasePath("reengus");
+                                            break;
+                                        case "shahpura":
+                                            setDatabasePath("shahpura");
                                             break;
                                         default:
                                             cmn.showAlertBox("Please Restart Application", "Ok", "", MainActivity.this);
