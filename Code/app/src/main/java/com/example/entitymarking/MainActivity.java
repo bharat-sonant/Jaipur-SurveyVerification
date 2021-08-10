@@ -152,8 +152,6 @@ public class MainActivity extends AppCompatActivity {
                         Location finalLocation = locationResult.getLastLocation();
                         LocationServices.getFusedLocationProviderClient(MainActivity.this).removeLocationUpdates(this);
 
-                        finalLocation.setLatitude(27.384374);
-                        finalLocation.setLongitude(75.9610205);
                         if (finalLocation != null) {
                             try {
                                 String address = String.valueOf(new Geocoder(MainActivity.this, Locale.getDefault())
