@@ -549,7 +549,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (photo != null) {
             common.closeDialog(MapActivity.this);
             common.setProgressDialog("", "Saving data", MapActivity.this, MapActivity.this);
-            rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).child("marksCount")
+            rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).child("lastMarkerKey")
                     .runTransaction(new Transaction.Handler() {
                         @NonNull
                         @Override
@@ -557,7 +557,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             if (currentData.getValue() == null) {
                                 currentData.setValue(1);
                             } else {
-                                currentData.setValue((Long) currentData.getValue() + 1);
+                                currentData.setValue(String.valueOf((Integer.parseInt(currentData.getValue().toString())  + 1)));
                             }
                             return Transaction.success(currentData);
                         }
@@ -568,7 +568,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                 try {
                                     assert currentData != null;
                                     int MARKS_COUNT = Integer.parseInt(String.valueOf(currentData.getValue()));
-
                                     HashMap<String, Object> hM = new HashMap<>();
                                     hM.put("latLng", lastKnownLatLngForWalkingMan.latitude + "," + lastKnownLatLngForWalkingMan.longitude);
                                     hM.put("userId", userId);
@@ -581,6 +580,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                     rootRef.child("EntityMarkingData/LastScanTime/Surveyor").child(userId).setValue(new SimpleDateFormat("dd MMM HH:mm:ss").format(new Date()));
                                     rootRef.child("EntityMarkingData/LastScanTime/Ward").child(selectedWard).setValue(new SimpleDateFormat("dd MMM HH:mm:ss").format(new Date()));
                                     common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/" + userId + "/marked"));
+                                    common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).child("marksCount"));
                                     common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/EmployeeWise/" + userId + "/" + selectedWard + "/marked"));
                                     common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/DateWise/" + date + "/" + selectedWard + "/marked"));
                                     common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/EmployeeWise/" + userId + "/totalMarked"));
@@ -607,12 +607,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                                     common.closeDialog(MapActivity.this);
                                                 }
                                             }).addOnFailureListener(e -> common.closeDialog(MapActivity.this));
+
                                 } catch (Exception e) {
                                     photo = null;
                                     enableZoom = true;
                                     common.closeDialog(MapActivity.this);
                                     e.printStackTrace();
                                 }
+
 
                             } else {
                                 houseTypeSpinner.setSelection(0);

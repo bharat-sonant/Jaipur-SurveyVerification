@@ -275,7 +275,7 @@ public class CommonFunctions {
                 if (currentData.getValue() == null) {
                     currentData.setValue(1);
                 } else {
-                    currentData.setValue((Long) currentData.getValue() + 1);
+                    currentData.setValue(String.valueOf((Integer.parseInt(currentData.getValue().toString())  + 1)));
                 }
                 return Transaction.success(currentData);
             }
@@ -294,7 +294,7 @@ public class CommonFunctions {
                 if (currentData.getValue() == null) {
                     currentData.setValue("");
                 } else {
-                    currentData.setValue((Long) currentData.getValue() - 1);
+                    currentData.setValue(String.valueOf((Integer.parseInt(currentData.getValue().toString())  - 1)));
                 }
                 return Transaction.success(currentData);
             }
