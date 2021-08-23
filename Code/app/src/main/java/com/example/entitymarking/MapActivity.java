@@ -557,7 +557,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             if (currentData.getValue() == null) {
                                 currentData.setValue(1);
                             } else {
-                                currentData.setValue(String.valueOf((Integer.parseInt(currentData.getValue().toString())  + 1)));
+                                currentData.setValue(String.valueOf((Integer.parseInt(currentData.getValue().toString()) + 1)));
                             }
                             return Transaction.success(currentData);
                         }
@@ -589,6 +589,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                     common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard + "/marked"));
                                     if (checkWhichRBisChecked()) {
                                         common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard + "/alreadyInstalled"));
+                                        common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).child("alreadyInstalledCount"));
                                     }
                                     houseTypeSpinner.setSelection(0);
                                     setBothRBUnchecked();
@@ -596,7 +597,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
                                     ByteArrayOutputStream toUpload = new ByteArrayOutputStream();
-                                    photo.compress(Bitmap.CompressFormat.JPEG, 80, toUpload);
+                                    Bitmap.createScaledBitmap(photo, 400, 600, false)
+                                            .compress(Bitmap.CompressFormat.JPEG, 100, toUpload);
                                     FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + selectedCity)
                                             .child("/MarkingSurveyImages/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT + ".jpg")
                                             .putBytes(toUpload.toByteArray())
@@ -867,9 +869,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             pictureCallback = (bytes, camera) -> {
                 Matrix matrix = new Matrix();
                 matrix.postRotate(90F);
-                photo = Bitmap.createBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length),
-                        0, 0, BitmapFactory.decodeByteArray(bytes, 0, bytes.length).getWidth(),
-                        BitmapFactory.decodeByteArray(bytes, 0, bytes.length).getHeight(), matrix, true);
+                Bitmap b = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                photo = Bitmap.createBitmap(b, 0, 0, b.getWidth(), b.getHeight(), matrix, true);
 
                 if (photo != null) {
                     if (isEdit) {
