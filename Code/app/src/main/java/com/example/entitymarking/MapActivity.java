@@ -600,7 +600,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                                     ByteArrayOutputStream toUpload = new ByteArrayOutputStream();
                                     Bitmap.createScaledBitmap(photo, 400, 600, false)
-                                            .compress(Bitmap.CompressFormat.JPEG, 100, toUpload);
+                                            .compress(Bitmap.CompressFormat.JPEG, 80, toUpload);
                                     FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + selectedCity)
                                             .child("/MarkingSurveyImages/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT + ".jpg")
                                             .putBytes(toUpload.toByteArray())
@@ -1229,7 +1229,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                     if (temp == 0) {
                                     } else if (temp > 0) {
                                         common.decCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard + "/alreadyInstalled"));
+                                        common.decCountByOne(rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).child("alreadyInstalledCount"));
                                     } else {
+                                        common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).child("alreadyInstalledCount"));
                                         common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard + "/alreadyInstalled"));
                                     }
 
@@ -1243,7 +1245,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                                     try {
                                         ByteArrayOutputStream toUpload = new ByteArrayOutputStream();
-                                        photo.compress(Bitmap.CompressFormat.JPEG, 80, toUpload);
+                                        Bitmap.createScaledBitmap(photo, 400, 600, false)
+                                                .compress(Bitmap.CompressFormat.JPEG, 80, toUpload);
                                         FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + selectedCity)
                                                 .child("/MarkingSurveyImages/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + mdm.getImageName())
                                                 .putBytes(toUpload.toByteArray())
