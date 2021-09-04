@@ -61,6 +61,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CustomCap;
 import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -696,13 +698,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         currentLineTv.setText("" + (currentLineNumber + 1) + " / " + dbColl.size());
         drawAllLine();
         mMap.addPolyline(new PolylineOptions().addAll(dbColl.get(currentLineNumber))
-                .startCap(new RoundCap())
-                .endCap(new RoundCap())
+                .endCap(new CustomCap(BitmapDescriptorFactory.fromResource(R.drawable.upper60), 30))
+                .startCap(new CustomCap(BitmapDescriptorFactory.fromResource(R.drawable.start50), 30))
                 .color(0xff000000)
                 .jointType(JointType.ROUND)
                 .width(8));
-
-
     }
 
     private void drawAllLine() {
