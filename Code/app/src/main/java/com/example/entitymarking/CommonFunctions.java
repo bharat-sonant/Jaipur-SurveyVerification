@@ -18,6 +18,7 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 
@@ -33,15 +34,25 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -56,7 +67,7 @@ public class CommonFunctions {
     public static final int LOCATION_REQUEST = 500;
 
 
-    private SharedPreferences getDatabaseSp(Context context) {
+    public SharedPreferences getDatabaseSp(Context context) {
         return context.getSharedPreferences("LoginDetails", Context.MODE_PRIVATE);
     }
 
@@ -65,7 +76,7 @@ public class CommonFunctions {
     }
 
     public StorageReference getDatabaseStoragePath(Context context) {
-        return FirebaseStorage.getInstance().getReferenceFromUrl(getDatabaseSp(context).getString("storagePath", " "));
+        return FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/"+getDatabaseSp(context).getString("storagePath", " "));
     }
 
     public void showAlertBox(String message, String pBtn, String nBtn, Context ctx) {
@@ -303,6 +314,37 @@ public class CommonFunctions {
             public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
             }
         });
+    }
+
+    public void mFetchAlreadyInstalledCBHeading(Context context) {
+        FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/Common/EntityMarkingData/alreadyInstalledCheckBoxText.json")
+                .getMetadata().addOnSuccessListener(storageMetadata -> {
+                    long serverUpdation = storageMetadata.getCreationTimeMillis();
+                    long localUpdation = getDatabaseSp(context).getLong("alreadyInstalledLastUpdate",0);
+                    if (serverUpdation != localUpdation) {
+                        getDatabaseSp(context).edit().putLong("alreadyInstalledLastUpdate", serverUpdation).apply();
+                        try {
+                            File local = File.createTempFile("temp","txt");
+                            FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/Common/EntityMarkingData/alreadyInstalledCheckBoxText.json")
+                                    .getFile(local).addOnCompleteListener(task -> {
+                                        try {
+                                            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(local)));
+                                            StringBuilder sb = new StringBuilder();
+                                            String str;
+                                            while ((str = br.readLine()) != null) {
+                                                sb.append(str);
+                                            }
+                                            getDatabaseSp(context).edit().putString("alreadyInstalledCbHeading", sb.toString().trim()).apply();
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    });
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
     }
 
 }

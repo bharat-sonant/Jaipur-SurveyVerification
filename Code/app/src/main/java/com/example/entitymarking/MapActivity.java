@@ -137,7 +137,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             FOCUS_AREA_SIZE = 300,
             PERMISSION_CODE = 1000;
 
-    private static final String TAG = MapActivity.class.getSimpleName();
+//    private static final String TAG = MapActivity.class.getSimpleName();
 
     @SuppressLint("SimpleDateFormat")
     @Override
@@ -172,13 +172,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         selectedWard = preferences.getString("assignment", null);
         selectedCity = preferences.getString("storagePath", "");
         userId = preferences.getString("userId", "");
-        cbText = preferences.getString("alreadyInstalledCheckBoxText", getResources().getString(R.string.already_installed_cb_text));
+        cbText = preferences.getString("alreadyInstalledCbHeading", getResources().getString(R.string.already_installed_cb_text));
         rgHeadingTv.setText(cbText);
         setRB();
         if (selectedWard != null) {
             common.setProgressDialog("Please Wait", "", MapActivity.this, MapActivity.this);
             setPageTitle();
-            runOnUiThread(this::fetchHouseTypesAndSetSpinner);
+            fHouseTypeFromSto();
             fetchWardJson();
             assignedWardCEL();
             lastScanTimeVEL();
@@ -240,127 +240,172 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         toolbar.setNavigationOnClickListener(v -> MapActivity.this.onBackPressed());
     }
 
-    private void fetchHouseTypesAndSetSpinner() {
-        rootRef.child("Defaults/FinalHousesType").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.getValue() != null) {
-                    houseList = new ArrayList<>();
-                    houseDataHashMap = new HashMap<>();
-                    houseList.add("Select House Type");
-                    for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                        if (dataSnapshot.hasChild("name")) {
-                            String[] tempStr = String.valueOf(dataSnapshot.child("name").getValue()).split("\\(");
-                            houseDataHashMap.put(String.valueOf(tempStr[0]), Integer.parseInt(Objects.requireNonNull(dataSnapshot.getKey())));
-                            houseList.add(tempStr[0]);
+    private void fHouseTypeFromSto() {
+        common.getDatabaseStoragePath(MapActivity.this).child("/Defaults/FinalHousesType.json")
+                .getMetadata().addOnSuccessListener(storageMetadata -> {
+            long serverUpdation = storageMetadata.getCreationTimeMillis();
+            long localUpdation = common.getDatabaseSp(MapActivity.this).getLong("houseTypeLastUpdate",0);
+            if (serverUpdation != localUpdation) {
+                common.getDatabaseSp(MapActivity.this).edit().putLong("houseTypeLastUpdate", serverUpdation).apply();
+                try {
+                    File local = File.createTempFile("temp","txt");
+                    common.getDatabaseStoragePath(MapActivity.this)
+                            .child("/Defaults/FinalHousesType.json")
+                            .getFile(local).addOnCompleteListener(task -> {
+                        try {
+                            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(local)));
+                            StringBuilder sb = new StringBuilder();
+                            String str;
+                            while ((str = br.readLine()) != null) {
+                                sb.append(str);
+                            }
+                            common.getDatabaseSp(MapActivity.this).edit().putString("houseType", sb.toString().trim()).apply();
+                            parseSpinnerData();
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                    }
-                    ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(MapActivity.this, android.R.layout.simple_spinner_item, houseList) {
-                        @Override
-                        public boolean isEnabled(int position) {
-                            return !(position == 0);
-                        }
-
-                        @Override
-                        public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent) {
-                            View view = super.getDropDownView(position, convertView, parent);
-                            TextView tv = (TextView) view;
-                            tv.setTextColor(position == 0 ? Color.GRAY : Color.BLACK);
-                            return view;
-                        }
-
-                    };
-                    spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    houseTypeSpinner.setAdapter(spinnerArrayAdapter);
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-
-        houseTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                if (houseTypeSpinner.getSelectedItemId() != 0) {
-                    onSaveClick(view);
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
+            } else {
+                parseSpinnerData();
             }
         });
     }
 
-    private void fetchWardJson() {
+    private void parseSpinnerData(){
         try {
-            File localFile = File.createTempFile("images", "jpg");
-            FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + selectedCity + "/WardJson")
-                    .child(selectedWard + ".json").getFile(localFile).addOnSuccessListener(taskSnapshot -> {
-                try {
-                    BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(localFile)));
-                    StringBuilder sb = new StringBuilder();
-                    String str;
-                    while ((str = br.readLine()) != null) {
-                        sb.append(str);
-                    }
-                    prepareDB(new JSONObject(sb.toString()));
-
-                } catch (IOException | JSONException e) {
-                    e.printStackTrace();
+            JSONArray arr = new JSONArray(common.getDatabaseSp(MapActivity.this).getString("houseType",""));
+            houseList = new ArrayList<>();
+            houseDataHashMap = new HashMap<>();
+            houseList.add("Select House Type");
+            for (int i = 0 ; i < arr.length() ; i++ )
+            {
+                if (!arr.get(i).toString().equalsIgnoreCase("null")) {
+                    JSONObject o = arr.getJSONObject(i);
+                    String[] tempStr = String.valueOf(o.get("name")).split("\\(");
+                    houseDataHashMap.put(String.valueOf(tempStr[0]),i);
+                    houseList.add(tempStr[0]);
                 }
-            }).addOnFailureListener(e -> {
-                common.closeDialog(this);
-                AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
-                builder.setMessage("No Data Found").setCancelable(false)
-                        .setPositiveButton("Ok", (dialog, id) -> {
-                            MapActivity.this.onBackPressed();
-                            dialog.cancel();
-                        })
-                        .setNegativeButton("", (dialog, i) -> {
-                            MapActivity.this.onBackPressed();
-                            dialog.cancel();
-                        });
-                AlertDialog alertDialog = builder.create();
-                alertDialog.show();
+            }
+            ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(MapActivity.this, android.R.layout.simple_spinner_item, houseList) {
+                @Override
+                public boolean isEnabled(int position) {
+                    return !(position == 0);
+                }
+
+                @Override
+                public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent) {
+                    View view = super.getDropDownView(position, convertView, parent);
+                    TextView tv = (TextView) view;
+                    tv.setTextColor(position == 0 ? Color.GRAY : Color.BLACK);
+                    return view;
+                }
+
+            };
+            spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            houseTypeSpinner.setAdapter(spinnerArrayAdapter);
+            houseTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                    if (houseTypeSpinner.getSelectedItemId() != 0) {
+                        onSaveClick(view);
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {
+
+                }
             });
-        } catch (Exception e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    private void prepareDB(JSONObject wardJSONObject) {
-        Iterator<String> keys = wardJSONObject.keys();
-        dbColl = new ArrayList<>();
-        while (keys.hasNext()) {
-            String key = keys.next();
-            try {
-                if (wardJSONObject.get(key) instanceof JSONObject) {
-                    List<LatLng> tempList = new ArrayList<>();
-                    JSONArray latLngPointJSONArray = wardJSONObject.getJSONObject(key).getJSONArray("points");
-                    for (int a = 0; a < latLngPointJSONArray.length(); a++) {
+    private void fetchWardJson() {
+        common.getDatabaseStoragePath(MapActivity.this).child("/WardJson/"+selectedWard+".json")
+                .getMetadata().addOnSuccessListener(storageMetadata -> {
+            long serverUpdation = storageMetadata.getCreationTimeMillis();
+            long localUpdation = common.getDatabaseSp(MapActivity.this).getLong("wardJSONLastUpdate",0);
+            if (serverUpdation != localUpdation) {
+                common.getDatabaseSp(MapActivity.this).edit().putLong("wardJSONLastUpdate", serverUpdation).apply();
+                try {
+                    File local = File.createTempFile("temp","txt");
+                    common.getDatabaseStoragePath(MapActivity.this)
+                            .child("/WardJson/"+selectedWard+".json")
+                            .getFile(local).addOnCompleteListener(task -> {
                         try {
-                            double lat = latLngPointJSONArray.getJSONArray(a).getDouble(0);
-                            double lng = latLngPointJSONArray.getJSONArray(a).getDouble(1);
-                            tempList.add(new LatLng(lat, lng));
-                        } catch (JSONException e) {
+                            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(local)));
+                            StringBuilder sb = new StringBuilder();
+                            String str;
+                            while ((str = br.readLine()) != null) {
+                                sb.append(str);
+                            }
+                            common.getDatabaseSp(MapActivity.this).edit().putString("wardJSON", sb.toString().trim()).apply();
+                            prepareDB();
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
-                    }
-                    dbColl.add(tempList);
+                    }).addOnFailureListener(e -> {
+                        common.closeDialog(this);
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
+                        builder.setMessage("No Data Found").setCancelable(false)
+                                .setPositiveButton("Ok", (dialog, id) -> {
+                                    MapActivity.this.onBackPressed();
+                                    dialog.cancel();
+                                })
+                                .setNegativeButton("", (dialog, i) -> {
+                                    MapActivity.this.onBackPressed();
+                                    dialog.cancel();
+                                });
+                        AlertDialog alertDialog = builder.create();
+                        alertDialog.show();
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
+            } else {
+                prepareDB();
             }
+        });
+    }
+
+    private void prepareDB() {
+        try {
+            JSONObject wardJSONObject = new JSONObject(common.getDatabaseSp(MapActivity.this).getString("wardJSON",""));
+            Iterator<String> keys = wardJSONObject.keys();
+            dbColl = new ArrayList<>();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                try {
+                    if (wardJSONObject.get(key) instanceof JSONObject) {
+                        List<LatLng> tempList = new ArrayList<>();
+                        JSONArray latLngPointJSONArray = wardJSONObject.getJSONObject(key).getJSONArray("points");
+                        for (int a = 0; a < latLngPointJSONArray.length(); a++) {
+                            try {
+                                double lat = latLngPointJSONArray.getJSONArray(a).getDouble(0);
+                                double lng = latLngPointJSONArray.getJSONArray(a).getDouble(1);
+                                tempList.add(new LatLng(lat, lng));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        dbColl.add(tempList);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            celForLine();
+            drawLine();
+            fetchMarkerForLine(false);
+            common.closeDialog(this);
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
-        celForLine();
-        drawLine();
-        fetchMarkerForLine(false);
-        common.closeDialog(this);
     }
 
     private void celForLine() {
@@ -520,7 +565,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         try {
                             saveMarkedLocationAndUploadPhoto();
                         } catch (Exception e) {
-                            Log.d(TAG, "onPostExecute: " + e.toString());
+                            e.printStackTrace();
                         }
 
                     } else {
@@ -1352,7 +1397,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
                 }
             }
-
         } catch (Exception e) {
             e.printStackTrace();
 
@@ -1374,6 +1418,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                     selectedWard = String.valueOf(snapshot.getValue());
                                     currentLineNumber = 0;
                                     titleTv.setText("Ward: " + selectedWard);
+                                    common.getDatabaseSp(MapActivity.this).edit().remove("wardJSONLastUpdate").apply();
+                                    common.getDatabaseSp(MapActivity.this).edit().remove("wardJSON").apply();
                                     fetchWardJson();
                                     mainCheckLocationForRealTimeRequest();
                                     dialog.cancel();

@@ -45,7 +45,7 @@ public class LoginActivity extends AppCompatActivity {
         loginBtn = findViewById(R.id.login);
         rootRef = common.getDatabaseRef(LoginActivity.this);
         preferences = getSharedPreferences("LoginDetails", MODE_PRIVATE);
-        fetchStringsValue();
+        common.mFetchAlreadyInstalledCBHeading(LoginActivity.this);
     }
 
     private void setPageTitle() {
@@ -53,7 +53,6 @@ public class LoginActivity extends AppCompatActivity {
             preferences.edit().putString("dbPath", "https://dtdnavigatortesting.firebaseio.com/").apply();
             preferences.edit().putString("storagePath", "Test").apply();
             rootRef = common.getDatabaseRef(LoginActivity.this);
-            fetchStringsValue();
             common.showAlertBox("Testing Mode Enabled", "Ok", "", LoginActivity.this);
             return false;
         });
@@ -107,7 +106,8 @@ public class LoginActivity extends AppCompatActivity {
         if (isPass) {
             isPass = false;
             common.setProgressDialog("Please Wait", "", LoginActivity.this, LoginActivity.this);
-            rootRef.child("EntityMarkingData/MarkerAppAccess/").child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+            rootRef.child("EntityMarkingData/MarkerAppAccess/").child(userId)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if (snapshot.getValue() != null) {
@@ -169,22 +169,5 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    private void fetchStringsValue() {
-        rootRef.child("Settings/MarkerApplicationData/alreadyInstalledCheckBoxText/")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.getValue() != null) {
-                    preferences.edit().putString("alreadyInstalledCheckBoxText", String.valueOf(snapshot.getValue())).apply();
-                } else {
-                    preferences.edit().remove("isInstalledCheckBoxText").apply();
-                }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-    }
 }

@@ -3,13 +3,26 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/border.xml" value="0.19537037037037036" />
+        <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/bordergreen.xml" value="0.19537037037037036" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/cam_icon.xml" value="0.1962962962962963" />
+        <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/cancel_btn_background.xml" value="0.19537037037037036" />
+        <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/capture_btn_background.xml" value="0.19537037037037036" />
+        <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/line_change_background.xml" value="0.2265625" />
+        <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/map_lower_screen_border.xml" value="0.2265625" />
+        <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/next_line_icon.xml" value="0.19537037037037036" />
+        <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/prev_line_icon.xml" value="0.19537037037037036" />
+        <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/rounded_button.xml" value="0.19537037037037036" />
+        <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/top_corner.xml" value="0.1824074074074074" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/view_border.xml" value="0.2265625" />
+        <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/layout/activity_login.xml" value="0.14537037037037037" />
+        <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/layout/activity_main.xml" value="0.21041666666666667" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/layout/activity_map.xml" value="0.21041666666666667" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/layout/custom_camera_alertbox.xml" value="0.21041666666666667" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/layout/custom_image_preview.xml" value="0.21041666666666667" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/layout/form_dialog_for_rejected_marker.xml" value="0.21041666666666667" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/layout/move_to_line_view.xml" value="0.21041666666666667" />
+        <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.1925925925925926" />
       </map>
     </option>
   </component>
