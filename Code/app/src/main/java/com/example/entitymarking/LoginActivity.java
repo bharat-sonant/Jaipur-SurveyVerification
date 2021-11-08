@@ -51,7 +51,9 @@ public class LoginActivity extends AppCompatActivity {
     private void setPageTitle() {
         findViewById(R.id.screen_title).setOnLongClickListener(view -> {
             preferences.edit().putString("dbPath", "https://dtdnavigatortesting.firebaseio.com/").apply();
+//            preferences.edit().putString("dbPath", "https://dtdreengus.firebaseio.com/").apply();
             preferences.edit().putString("storagePath", "Test").apply();
+//            preferences.edit().putString("storagePath", "Reengus").apply();
             rootRef = common.getDatabaseRef(LoginActivity.this);
             common.showAlertBox("Testing Mode Enabled", "Ok", "", LoginActivity.this);
             return false;

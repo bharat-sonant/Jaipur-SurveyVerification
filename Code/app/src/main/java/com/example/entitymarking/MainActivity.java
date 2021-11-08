@@ -97,18 +97,23 @@ public class MainActivity extends AppCompatActivity {
 
     private void setDatabasePath(String city) {
         String dbPath, storagePath;
-        if (city.equals("test")) {
-            dbPath = "https://dtdnavigatortesting.firebaseio.com/";
-            storagePath = "Test";
-        } else if (city.equals("reengus")) {
-            dbPath = "https://dtdreengus.firebaseio.com/";
-            storagePath = "Reengus";
-        } else if (city.equals("shahpura")) {
-            dbPath = "https://dtdshahpura.firebaseio.com/";
-            storagePath = "Shahpura";
-        } else {
-            dbPath = "https://dtdnavigator.firebaseio.com/";
-            storagePath = "Sikar";
+        switch (city) {
+            case "test":
+                dbPath = "https://dtdnavigatortesting.firebaseio.com/";
+                storagePath = "Test";
+                break;
+            case "reengus":
+                dbPath = "https://dtdreengus.firebaseio.com/";
+                storagePath = "Reengus";
+                break;
+            case "shahpura":
+                dbPath = "https://dtdshahpura.firebaseio.com/";
+                storagePath = "Shahpura";
+                break;
+            default:
+                dbPath = "https://dtdnavigator.firebaseio.com/";
+                storagePath = "Sikar";
+                break;
         }
         dbPathSP.edit().putString("dbPath", dbPath).apply();
         dbPathSP.edit().putString("storagePath", storagePath).apply();
