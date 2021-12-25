@@ -160,7 +160,6 @@ public class SelectWardActivity extends AppCompatActivity {
             wrdNameTv.setText(model.getName());
 
             wrdNameTv.setOnClickListener(view1 -> {
-
                 new AsyncTask<Void, Void, Boolean>() {
                     @Override
                     protected void onPreExecute() {
@@ -189,7 +188,6 @@ public class SelectWardActivity extends AppCompatActivity {
                         common.closeDialog(SelectWardActivity.this);
                     }
                 }.execute();
-
             });
 
             return view;

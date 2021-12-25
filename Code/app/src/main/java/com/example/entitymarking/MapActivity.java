@@ -303,7 +303,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     tv.setTextColor(position == 0 ? Color.GRAY : Color.BLACK);
                     return view;
                 }
-
             };
             spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             houseTypeSpinner.setAdapter(spinnerArrayAdapter);
@@ -1316,8 +1315,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                         marker.setPosition(lastKnownLatLngForWalkingMan);
                                         mDMMap.remove(marker.getPosition());
                                     }
-
-
                                 } else {
                                     Toast.makeText(MapActivity.this, "Please Click New Image", Toast.LENGTH_SHORT).show();
                                 }
