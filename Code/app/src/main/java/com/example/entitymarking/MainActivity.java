@@ -110,6 +110,10 @@ public class MainActivity extends AppCompatActivity {
                 dbPath = "https://dtdshahpura.firebaseio.com/";
                 storagePath = "Shahpura";
                 break;
+            case "kishangarh":
+                dbPath = "https://dtdkishangarh.firebaseio.com/";
+                storagePath = "Kishangarh";
+                break;
             default:
                 dbPath = "https://dtdnavigator.firebaseio.com/";
                 storagePath = "Sikar";
@@ -176,6 +180,9 @@ public class MainActivity extends AppCompatActivity {
                                             break;
                                         case "shahpura":
                                             setDatabasePath("shahpura");
+                                            break;
+                                        case "kishangarh":
+                                            setDatabasePath("kishangarh");
                                             break;
                                         default:
                                             cmn.showAlertBox("Please Restart Application", "Ok", "", MainActivity.this);
