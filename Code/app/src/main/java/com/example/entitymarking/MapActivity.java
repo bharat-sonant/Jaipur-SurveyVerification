@@ -2,10 +2,13 @@ package com.example.entitymarking;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import android.Manifest;
@@ -26,6 +29,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -79,6 +83,7 @@ import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import org.json.JSONArray;
@@ -89,8 +94,11 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -140,6 +148,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 //    private static final String TAG = MapActivity.class.getSimpleName();
 
     @SuppressLint("SimpleDateFormat")
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -157,6 +166,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     @SuppressLint({"ResourceType", "SimpleDateFormat"})
+    @RequiresApi(api = Build.VERSION_CODES.P)
     private void inIt() {
         currentLineTv = findViewById(R.id.current_line_tv);
         rootRef = common.getDatabaseRef(this);
@@ -324,49 +334,94 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     private void fetchWardJson() {
-        common.getDatabaseStoragePath(MapActivity.this).child("/WardJson/"+selectedWard+".json")
-                .getMetadata().addOnSuccessListener(storageMetadata -> {
-            long serverUpdation = storageMetadata.getCreationTimeMillis();
-            long localUpdation = common.getDatabaseSp(MapActivity.this).getLong("wardJSONLastUpdate",0);
-            if (serverUpdation != localUpdation) {
-                common.getDatabaseSp(MapActivity.this).edit().putLong("wardJSONLastUpdate", serverUpdation).apply();
+        Log.d("TAG", "getStatusData: check A " + preferences.getString("storagePath","") + "  " +selectedWard);
+        StorageReference storageReference = FirebaseStorage.getInstance().getReference();
+        storageReference.child(preferences.getString("storagePath","") + "/WardLinesHouseJson/" + selectedWard + "/mapUpdateHistoryJson.json").getMetadata().addOnSuccessListener(storageMetadata -> {
+            long fileCreationTime = storageMetadata.getCreationTimeMillis();
+            long fileDownloadTime = preferences.getLong(preferences.getString("storagePath","") + "" + selectedWard + "mapUpdateHistoryJsonDownloadTime", 0);
+            Log.d("TAG", "getStatusData: check A " + fileCreationTime + "  " + fileDownloadTime);
+            if (fileDownloadTime != fileCreationTime) {
+                storageReference.child(preferences.getString("storagePath","") + "/WardLinesHouseJson/" + selectedWard + "/mapUpdateHistoryJson.json").getBytes(10000000).addOnSuccessListener(taskSnapshot -> {
+                    try {
+                        String str = new String(taskSnapshot, StandardCharsets.UTF_8);
+                        preferences.edit().putString(preferences.getString("storagePath","") + selectedWard + "mapUpdateHistoryJson", str).apply();
+                        preferences.edit().putLong(preferences.getString("storagePath","") + "" + selectedWard + "mapUpdateHistoryJsonDownloadTime", fileCreationTime).apply();
+                        checkDate(selectedWard);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+            } else {
+                checkDate(selectedWard);
+            }
+        });
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.P)
+    private void checkDate(String wardNo) {
+        Log.d("TAG", "getStatusData: check B ");
+        try {
+            JSONArray jsonArray = new JSONArray(preferences.getString(preferences.getString("storagePath","") + wardNo + "mapUpdateHistoryJson", ""));
+            for (int i = jsonArray.length() - 1; i >= 0; i--) {
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
                 try {
-                    File local = File.createTempFile("temp","txt");
-                    common.getDatabaseStoragePath(MapActivity.this)
-                            .child("/WardJson/"+selectedWard+".json")
-                            .getFile(local).addOnCompleteListener(task -> {
-                        try {
-                            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(local)));
-                            StringBuilder sb = new StringBuilder();
-                            String str;
-                            while ((str = br.readLine()) != null) {
-                                sb.append(str);
-                            }
-                            common.getDatabaseSp(MapActivity.this).edit().putString("wardJSON", sb.toString().trim()).apply();
-                            prepareDB();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }).addOnFailureListener(e -> {
-                        common.closeDialog(this);
-                        AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
-                        builder.setMessage("No Data Found").setCancelable(false)
-                                .setPositiveButton("Ok", (dialog, id) -> {
-                                    MapActivity.this.onBackPressed();
-                                    dialog.cancel();
-                                })
-                                .setNegativeButton("", (dialog, i) -> {
-                                    MapActivity.this.onBackPressed();
-                                    dialog.cancel();
-                                });
-                        AlertDialog alertDialog = builder.create();
-                        alertDialog.show();
-                    });
-                } catch (IOException e) {
+                    Date date1 = format.parse(format.format(new Date()));
+                    Date date2 = format.parse(jsonArray.getString(i));
+                    if (date1.after(date2)) {
+                        preferences.edit().putString("commonReferenceDate", String.valueOf(jsonArray.getString(i))).apply();
+                        Log.d("TAG", "getStatusData: check B1 " + preferences.getString("commonReferenceDate", ""));
+                        fileMetaDownload(String.valueOf(jsonArray.getString(i)),wardNo);
+                        break;
+                    } else if (date1.equals(date2)) {
+                        preferences.edit().putString("commonReferenceDate", String.valueOf(jsonArray.getString(i))).apply();
+                        fileMetaDownload(String.valueOf(jsonArray.getString(i)),wardNo);
+                        break;
+                    }
+                } catch (ParseException e) {
                     e.printStackTrace();
                 }
-            } else {
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.P)
+    private void fileMetaDownload(String dates, String wardNo) {
+        Log.d("TAG", "getStatusData: check C " + preferences.getString("commonReferenceDate", ""));
+        StorageReference storageReference = FirebaseStorage.getInstance().getReference();
+        storageReference.child(preferences.getString("storagePath","") + "/WardLinesHouseJson/" + wardNo + "/" + dates + ".json").getMetadata().addOnSuccessListener(storageMetadata -> {
+            long fileCreationTime = storageMetadata.getCreationTimeMillis();
+            long fileDownloadTime = preferences.getLong(preferences.getString("storagePath","") + wardNo + dates + "DownloadTime", 0);
+            Log.d("TAG", "getStatusData: check C1 " + fileCreationTime + "  " + fileDownloadTime);
+            if (fileDownloadTime != fileCreationTime) {
+                storageReference.child(preferences.getString("storagePath","") + "/WardLinesHouseJson/" + wardNo + "/" + dates + ".json").getBytes(10000000).addOnSuccessListener(taskSnapshot -> {
+                    try {
+                        String str = new String(taskSnapshot, StandardCharsets.UTF_8);
+                        common.getDatabaseSp(MapActivity.this).edit().putString("wardJSON", str).apply();
+                        preferences.edit().putLong(preferences.getString("storagePath","") + wardNo + dates + "DownloadTime", fileCreationTime).apply();
+                        prepareDB();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }).addOnFailureListener(Ex->{
+                    common.closeDialog(this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
+                    builder.setMessage("No Data Found").setCancelable(false)
+                            .setPositiveButton("Ok", (dialog, id) -> {
+                                MapActivity.this.onBackPressed();
+                                dialog.cancel();
+                            })
+                            .setNegativeButton("", (dialog, i) -> {
+                                MapActivity.this.onBackPressed();
+                                dialog.cancel();
+                            });
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.show();
+                });
+            }else {
                 prepareDB();
             }
         });
@@ -1400,6 +1455,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @SuppressLint({"CommitPrefEdits", "SetTextI18n"})
     private void assignedWardCEL() {
         cELForAssignedWard = new ValueEventListener() {
