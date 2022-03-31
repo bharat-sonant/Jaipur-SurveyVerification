@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-        checkWhetherLocationSettingsAreSatisfied();
+        setDatabasePath("niwai");
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -114,6 +114,10 @@ public class MainActivity extends AppCompatActivity {
                 dbPath = "https://dtdkishangarh.firebaseio.com/";
                 storagePath = "Kishangarh";
                 break;
+            case "niwai":
+                dbPath="https://dtdniwai.firebaseio.com/";
+                storagePath="Niwai";
+                break;
             default:
                 dbPath = "https://dtdnavigator.firebaseio.com/";
                 storagePath = "Sikar";
@@ -167,39 +171,39 @@ public class MainActivity extends AppCompatActivity {
                                         .get(0)
                                         .getLocality());
 
-                                if (address != null) {
-                                    switch (address.toLowerCase()) {
-                                        case "jaipur":
-                                            setDatabasePath("jaipur");
-                                            break;
-                                        case "sikar":
-                                            setDatabasePath("sikar");
-                                            break;
-                                        case "reengus":
-                                            setDatabasePath("reengus");
-                                            break;
-                                        case "shahpura":
-                                            setDatabasePath("shahpura");
-                                            break;
-                                        case "kishangarh":
-                                            setDatabasePath("kishangarh");
-                                            break;
-                                        default:
-                                            cmn.showAlertBox("Please Restart Application", "Ok", "", MainActivity.this);
-                                            break;
-                                    }
-
-                                } else {
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                                    builder.setMessage("Please Retry").setCancelable(false)
-                                            .setPositiveButton("Retry", (dialog, id) -> {
-                                                checkWhetherLocationSettingsAreSatisfied();
-                                                dialog.cancel();
-                                            })
-                                            .setNegativeButton("No", (dialog, i) -> finish());
-                                    AlertDialog alertDialog = builder.create();
-                                    alertDialog.show();
-                                }
+//                                if (address != null) {
+//                                    switch (address.toLowerCase()) {
+//                                        case "jaipur":
+//                                            setDatabasePath("jaipur");
+//                                            break;
+//                                        case "sikar":
+//                                            setDatabasePath("sikar");
+//                                            break;
+//                                        case "reengus":
+//                                            setDatabasePath("reengus");
+//                                            break;
+//                                        case "shahpura":
+//                                            setDatabasePath("shahpura");
+//                                            break;
+//                                        case "kishangarh":
+//                                            setDatabasePath("kishangarh");
+//                                            break;
+//                                        default:
+//                                            cmn.showAlertBox("Please Restart Application", "Ok", "", MainActivity.this);
+//                                            break;
+//                                    }
+//
+//                                } else {
+//                                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+//                                    builder.setMessage("Please Retry").setCancelable(false)
+//                                            .setPositiveButton("Retry", (dialog, id) -> {
+//                                                checkWhetherLocationSettingsAreSatisfied();
+//                                                dialog.cancel();
+//                                            })
+//                                            .setNegativeButton("No", (dialog, i) -> finish());
+//                                    AlertDialog alertDialog = builder.create();
+//                                    alertDialog.show();
+//                                }
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
