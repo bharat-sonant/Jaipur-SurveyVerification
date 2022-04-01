@@ -3,6 +3,16 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/MyOfficeApp/EntityMarking/Code/app/src/main/res/layout/activity_login.xml" value="0.25416666666666665" />
+        <entry key="..\:/MyOfficeApp/EntityMarking/Code/app/src/main/res/layout/activity_main.xml" value="0.25416666666666665" />
+        <entry key="..\:/MyOfficeApp/EntityMarking/Code/app/src/main/res/layout/activity_map.xml" value="0.25416666666666665" />
+        <entry key="..\:/MyOfficeApp/EntityMarking/Code/app/src/main/res/layout/activity_maps.xml" value="0.25416666666666665" />
+        <entry key="..\:/MyOfficeApp/EntityMarking/Code/app/src/main/res/layout/activity_select_ward.xml" value="0.25416666666666665" />
+        <entry key="..\:/MyOfficeApp/EntityMarking/Code/app/src/main/res/layout/custom_camera_alertbox.xml" value="0.25416666666666665" />
+        <entry key="..\:/MyOfficeApp/EntityMarking/Code/app/src/main/res/layout/custom_image_preview.xml" value="0.25416666666666665" />
+        <entry key="..\:/MyOfficeApp/EntityMarking/Code/app/src/main/res/layout/form_dialog_for_rejected_marker.xml" value="0.25416666666666665" />
+        <entry key="..\:/MyOfficeApp/EntityMarking/Code/app/src/main/res/layout/move_to_line_view.xml" value="0.25416666666666665" />
+        <entry key="..\:/MyOfficeApp/EntityMarking/Code/app/src/main/res/layout/wrd_name_listview_layout.xml" value="0.25416666666666665" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/border.xml" value="0.19537037037037036" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/bordergreen.xml" value="0.19537037037037036" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/cam_icon.xml" value="0.1962962962962963" />
@@ -74,7 +84,7 @@
       </value>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">
