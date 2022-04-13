@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-        setDatabasePath("niwai");
+        setDatabase("Test");
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -95,36 +95,10 @@ public class MainActivity extends AppCompatActivity {
         }.execute();
     }
 
-    private void setDatabasePath(String city) {
-        String dbPath, storagePath;
-        switch (city) {
-            case "test":
-                dbPath = "https://dtdnavigatortesting.firebaseio.com/";
-                storagePath = "Test";
-                break;
-            case "reengus":
-                dbPath = "https://dtdreengus.firebaseio.com/";
-                storagePath = "Reengus";
-                break;
-            case "shahpura":
-                dbPath = "https://dtdshahpura.firebaseio.com/";
-                storagePath = "Shahpura";
-                break;
-            case "kishangarh":
-                dbPath = "https://dtdkishangarh.firebaseio.com/";
-                storagePath = "Kishangarh";
-                break;
-            case "niwai":
-                dbPath="https://dtdniwai.firebaseio.com/";
-                storagePath="Niwai";
-                break;
-            default:
-                dbPath = "https://dtdnavigator.firebaseio.com/";
-                storagePath = "Sikar";
-                break;
-        }
-        dbPathSP.edit().putString("dbPath", dbPath).apply();
-        dbPathSP.edit().putString("storagePath", storagePath).apply();
+    void setDatabase(String city) {
+        String path = cmn.getDatabase(city);
+        dbPathSP.edit().putString("dbPath", path).apply();
+        dbPathSP.edit().putString("storagePath", city).apply();
         loginIntent();
     }
 
@@ -159,54 +133,19 @@ public class MainActivity extends AppCompatActivity {
         LocationServices.getFusedLocationProviderClient(this).requestLocationUpdates(new LocationRequest().setInterval(5000).setFastestInterval(1000).setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY),
                 new LocationCallback() {
                     @Override
-                    public void onLocationResult(LocationResult locationResult) {
+                    public void onLocationResult(@NonNull LocationResult locationResult) {
                         super.onLocationResult(locationResult);
                         Location finalLocation = locationResult.getLastLocation();
                         LocationServices.getFusedLocationProviderClient(MainActivity.this).removeLocationUpdates(this);
 
-                        if (finalLocation != null) {
-                            try {
-                                String address = String.valueOf(new Geocoder(MainActivity.this, Locale.getDefault())
-                                        .getFromLocation(finalLocation.getLatitude(), finalLocation.getLongitude(), 5)
-                                        .get(0)
-                                        .getLocality());
+                        try {
+                            String address = String.valueOf(new Geocoder(MainActivity.this, Locale.getDefault())
+                                    .getFromLocation(finalLocation.getLatitude(), finalLocation.getLongitude(), 5)
+                                    .get(0)
+                                    .getLocality());
 
-//                                if (address != null) {
-//                                    switch (address.toLowerCase()) {
-//                                        case "jaipur":
-//                                            setDatabasePath("jaipur");
-//                                            break;
-//                                        case "sikar":
-//                                            setDatabasePath("sikar");
-//                                            break;
-//                                        case "reengus":
-//                                            setDatabasePath("reengus");
-//                                            break;
-//                                        case "shahpura":
-//                                            setDatabasePath("shahpura");
-//                                            break;
-//                                        case "kishangarh":
-//                                            setDatabasePath("kishangarh");
-//                                            break;
-//                                        default:
-//                                            cmn.showAlertBox("Please Restart Application", "Ok", "", MainActivity.this);
-//                                            break;
-//                                    }
-//
-//                                } else {
-//                                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-//                                    builder.setMessage("Please Retry").setCancelable(false)
-//                                            .setPositiveButton("Retry", (dialog, id) -> {
-//                                                checkWhetherLocationSettingsAreSatisfied();
-//                                                dialog.cancel();
-//                                            })
-//                                            .setNegativeButton("No", (dialog, i) -> finish());
-//                                    AlertDialog alertDialog = builder.create();
-//                                    alertDialog.show();
-//                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
                     }
                 }, Looper.getMainLooper());

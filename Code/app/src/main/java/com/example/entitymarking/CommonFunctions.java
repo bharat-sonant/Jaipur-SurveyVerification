@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.ConnectivityManager;
@@ -18,34 +17,25 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.dynamicanimation.animation.SpringAnimation;
-
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
-import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.BufferedReader;
@@ -135,6 +125,7 @@ public class CommonFunctions {
     public BitmapDescriptor BitmapFromVector(Context context, int vectorResId) {
         Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
 
+        assert vectorDrawable != null;
         vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
 
         Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getMinimumWidth(), vectorDrawable.getMinimumHeight(), Bitmap.Config.ARGB_8888);
@@ -345,6 +336,38 @@ public class CommonFunctions {
 
                     }
                 });
+    }
+
+
+    public String getDatabase(String city) {
+        String path;
+        switch (city) {
+            case "Test":
+                path = "https://dtdnavigatortesting.firebaseio.com/";
+                break;
+            case "Reengus":
+                path = "https://dtdreengus.firebaseio.com/";
+                break;
+            case "Shahpura":
+                path = "https://dtdshahpura.firebaseio.com/";
+                break;
+            case "Jaipur":
+                path = "https://dtdjaipur.firebaseio.com/";
+                break;
+            case "Kishangarh":
+                path = "https://dtdkishangarh.firebaseio.com/";
+                break;
+            case "Jaisalmer":
+                path = "https://dtdjaisalmer.firebaseio.com/";
+                break;
+            case "Niwai":
+                path = "https://dtdniwai.firebaseio.com/";
+                break;
+            default:
+                path = "https://dtdnavigator.firebaseio.com/";
+                break;
+        }
+        return path;
     }
 
 }

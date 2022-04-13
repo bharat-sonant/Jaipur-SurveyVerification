@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Amit Office Work/Andriod Applications/EntityMarkingApp/Code/app/src/main/res/layout/activity_login.xml" value="0.11302083333333333" />
         <entry key="..\:/MyOfficeApp/EntityMarking/Code/app/src/main/res/layout/activity_login.xml" value="0.25416666666666665" />
         <entry key="..\:/MyOfficeApp/EntityMarking/Code/app/src/main/res/layout/activity_main.xml" value="0.25416666666666665" />
         <entry key="..\:/MyOfficeApp/EntityMarking/Code/app/src/main/res/layout/activity_map.xml" value="0.25416666666666665" />
@@ -84,7 +85,7 @@
       </value>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">
