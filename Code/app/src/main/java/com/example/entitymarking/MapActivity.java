@@ -7,8 +7,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import android.Manifest;
@@ -29,10 +27,8 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -94,7 +90,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -144,8 +139,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             GPS_CODE_FOR_MODIFICATION = 7777,
             FOCUS_AREA_SIZE = 300,
             PERMISSION_CODE = 1000;
-
-//    private static final String TAG = MapActivity.class.getSimpleName();
 
     @SuppressLint("SimpleDateFormat")
     @RequiresApi(api = Build.VERSION_CODES.P)
@@ -336,12 +329,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @RequiresApi(api = Build.VERSION_CODES.P)
     private void fetchWardJson() {
-        Log.d("TAG", "getStatusData: check A " + preferences.getString("storagePath","") + "  " +selectedWard);
         StorageReference storageReference = FirebaseStorage.getInstance().getReference();
         storageReference.child(preferences.getString("storagePath","") + "/WardLinesHouseJson/" + selectedWard + "/mapUpdateHistoryJson.json").getMetadata().addOnSuccessListener(storageMetadata -> {
             long fileCreationTime = storageMetadata.getCreationTimeMillis();
             long fileDownloadTime = preferences.getLong(preferences.getString("storagePath","") + "" + selectedWard + "mapUpdateHistoryJsonDownloadTime", 0);
-            Log.d("TAG", "getStatusData: check A " + fileCreationTime + "  " + fileDownloadTime);
             if (fileDownloadTime != fileCreationTime) {
                 storageReference.child(preferences.getString("storagePath","") + "/WardLinesHouseJson/" + selectedWard + "/mapUpdateHistoryJson.json").getBytes(10000000).addOnSuccessListener(taskSnapshot -> {
                     try {
@@ -361,7 +352,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @RequiresApi(api = Build.VERSION_CODES.P)
     private void checkDate(String wardNo) {
-        Log.d("TAG", "getStatusData: check B ");
         try {
             JSONArray jsonArray = new JSONArray(preferences.getString(preferences.getString("storagePath","") + wardNo + "mapUpdateHistoryJson", ""));
             for (int i = jsonArray.length() - 1; i >= 0; i--) {
@@ -371,7 +361,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     Date date2 = format.parse(jsonArray.getString(i));
                     if (date1.after(date2)) {
                         preferences.edit().putString("commonReferenceDate", String.valueOf(jsonArray.getString(i))).apply();
-                        Log.d("TAG", "getStatusData: check B1 " + preferences.getString("commonReferenceDate", ""));
                         fileMetaDownload(String.valueOf(jsonArray.getString(i)),wardNo);
                         break;
                     } else if (date1.equals(date2)) {
@@ -390,12 +379,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @RequiresApi(api = Build.VERSION_CODES.P)
     private void fileMetaDownload(String dates, String wardNo) {
-        Log.d("TAG", "getStatusData: check C " + preferences.getString("commonReferenceDate", ""));
         StorageReference storageReference = FirebaseStorage.getInstance().getReference();
         storageReference.child(preferences.getString("storagePath","") + "/WardLinesHouseJson/" + wardNo + "/" + dates + ".json").getMetadata().addOnSuccessListener(storageMetadata -> {
             long fileCreationTime = storageMetadata.getCreationTimeMillis();
             long fileDownloadTime = preferences.getLong(preferences.getString("storagePath","") + wardNo + dates + "DownloadTime", 0);
-            Log.d("TAG", "getStatusData: check C1 " + fileCreationTime + "  " + fileDownloadTime);
             if (fileDownloadTime != fileCreationTime) {
                 storageReference.child(preferences.getString("storagePath","") + "/WardLinesHouseJson/" + wardNo + "/" + dates + ".json").getBytes(10000000).addOnSuccessListener(taskSnapshot -> {
                     try {

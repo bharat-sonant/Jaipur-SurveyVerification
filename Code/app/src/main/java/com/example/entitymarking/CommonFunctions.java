@@ -145,13 +145,13 @@ public class CommonFunctions {
 
     public boolean internetIsConnected() {
         try {
-            HttpURLConnection urlc = (HttpURLConnection) (new URL("https://google.com").openConnection());
-            urlc.setRequestProperty("User-Agent", "Test");
-            urlc.setRequestProperty("Connection", "close");
-            urlc.setConnectTimeout(10000);
-            urlc.setReadTimeout(10000);
-            urlc.connect();
-            return (urlc.getResponseCode() == 200);
+            HttpURLConnection urlConnection = (HttpURLConnection) (new URL("https://google.com").openConnection());
+            urlConnection.setRequestProperty("User-Agent", "Test");
+            urlConnection.setRequestProperty("Connection", "close");
+            urlConnection.setConnectTimeout(10000);
+            urlConnection.setReadTimeout(10000);
+            urlConnection.connect();
+            return (urlConnection.getResponseCode() == 200);
         } catch (Exception e) {
             return false;
         }
@@ -281,7 +281,6 @@ public class CommonFunctions {
                 }
                 return Transaction.success(currentData);
             }
-
             @Override
             public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
             }
@@ -362,6 +361,9 @@ public class CommonFunctions {
                 break;
             case "Niwai":
                 path = "https://dtdniwai.firebaseio.com/";
+                break;
+            case "Behror":
+                path="https://dtdbehror.firebaseio.com/";
                 break;
             default:
                 path = "https://dtdnavigator.firebaseio.com/";
