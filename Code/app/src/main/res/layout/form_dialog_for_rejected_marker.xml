@@ -1,61 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <TextView
+    <Button
+        android:id="@+id/re_click_picture"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/top_corner"
-        android:gravity="center"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:text="Modification"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:textSize="18dp" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#65BDBDBD"/>
-
+        android:layout_height="45dp"
+        android:layout_centerInParent="true"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
+        android:background="@drawable/capture_btn_background"
+        android:src="@drawable/cam_icon"
+        android:text="Change Picture"
+        android:textAllCaps="false"
+        android:textColor="#fff"
+        android:textSize="16sp" />
 
     <ImageView
         android:id="@+id/rejected_marker_image_preview"
         android:layout_width="match_parent"
         android:layout_height="250dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
         android:adjustViewBounds="true" />
 
-        <Button
-            android:id="@+id/re_click_picture"
-            android:layout_width="match_parent"
-            android:layout_height="45dp"
-            android:layout_centerInParent="true"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginTop="8dp"
-            android:text="Change Picture"
-            android:textColor="#fff"
-            android:textSize="16sp"
-            android:textAllCaps="false"
-            android:background="@drawable/capture_btn_background"
-            android:src="@drawable/cam_icon" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
         android:layout_marginTop="8dp"
-        android:orientation="horizontal"
-        android:background="#fff">
+        android:background="#fff"
+        android:gravity="center"
+        android:orientation="horizontal">
 
         <Spinner
             android:id="@+id/house_type_spinner_for_rejected_marker"
@@ -77,14 +60,6 @@
         android:orientation="vertical"
         android:padding="4dp">
 
-        <TextView
-            android:id="@+id/radio_group_heading_tv_for_rejected_marker"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:textColor="@color/black"
-            android:textSize="16sp" />
-
         <LinearLayout
             android:id="@+id/is_surveyed_rg"
             android:layout_width="match_parent"
@@ -94,19 +69,27 @@
 
             <RadioButton
                 android:id="@+id/is_surveyed_true_rb_for_rejected_marker"
-                android:layout_weight="1"
                 android:layout_width="0dp"
-                android:text="Yes"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Yes" />
 
             <RadioButton
                 android:id="@+id/is_surveyed_false_rb_for_rejected_marker"
-                android:layout_weight="1"
                 android:layout_width="0dp"
-                android:text="No"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="No" />
 
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/radio_group_heading_tv_for_rejected_marker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
 
     </LinearLayout>
 
@@ -145,5 +128,22 @@
             android:textSize="16sp" />
 
     </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/top_corner"
+        android:gravity="center"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:text="Modification"
+        android:textColor="@color/black"
+        android:textSize="18dp"
+        android:textStyle="bold" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#65BDBDBD" />
 
 </LinearLayout>

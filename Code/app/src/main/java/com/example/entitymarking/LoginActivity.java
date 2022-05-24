@@ -81,7 +81,7 @@ public class LoginActivity extends AppCompatActivity {
                         checkUserIdAndPassword();
                     }
                 } else {
-                    common.showAlertBox("Please Connect to internet","Ok","",LoginActivity.this);
+                    common.showAlertBox("Please Connect to internet", "Ok", "", LoginActivity.this);
                 }
                 common.closeDialog(LoginActivity.this);
             }
@@ -110,64 +110,64 @@ public class LoginActivity extends AppCompatActivity {
             common.setProgressDialog("Please Wait", "", LoginActivity.this, LoginActivity.this);
             rootRef.child("EntityMarkingData/MarkerAppAccess/").child(userId)
                     .addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    if (snapshot.getValue() != null) {
-                        if (snapshot.hasChild("isActive")) {
-                            if (snapshot.hasChild("password")) {
-                                if (snapshot.hasChild("name")) {
-                                    if (snapshot.hasChild("assignedWard")) {
-                                        if (String.valueOf(snapshot.child("password").getValue()).equals(password)) {
-                                            if (Boolean.parseBoolean(String.valueOf(snapshot.child("isActive").getValue()))) {
-                                                preferences.edit().putString("userId", userId).apply();
-                                                preferences.edit().putString("assignment", String.valueOf(snapshot.child("assignedWard").getValue())).apply();
-                                                Intent intent = new Intent(LoginActivity.this, MapActivity.class);
-                                                common.closeDialog(LoginActivity.this);
-                                                startActivity(intent);
-                                                finish();
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.getValue() != null) {
+                                if (snapshot.hasChild("isActive")) {
+                                    if (snapshot.hasChild("password")) {
+                                        if (snapshot.hasChild("name")) {
+                                            if (snapshot.hasChild("assignedWard")) {
+                                                if (String.valueOf(snapshot.child("password").getValue()).equals(password)) {
+                                                    if (Boolean.parseBoolean(String.valueOf(snapshot.child("isActive").getValue()))) {
+                                                        preferences.edit().putString("userId", userId).apply();
+                                                        preferences.edit().putString("assignment", String.valueOf(snapshot.child("assignedWard").getValue())).apply();
+                                                        Intent intent = new Intent(LoginActivity.this, MapActivity.class);
+                                                        common.closeDialog(LoginActivity.this);
+                                                        startActivity(intent);
+                                                        finish();
+                                                    } else {
+                                                        isPass = true;
+                                                        common.closeDialog(LoginActivity.this);
+                                                        common.showAlertBox("InActive user", "ok", "", LoginActivity.this);
+                                                    }
+                                                } else {
+                                                    isPass = true;
+                                                    common.closeDialog(LoginActivity.this);
+                                                    common.showAlertBox("Incorrect Password", "ok", "", LoginActivity.this);
+                                                }
                                             } else {
                                                 isPass = true;
                                                 common.closeDialog(LoginActivity.this);
-                                                common.showAlertBox("InActive user", "ok", "", LoginActivity.this);
+                                                common.showAlertBox("No Work Assigned", "ok", "", LoginActivity.this);
                                             }
+
                                         } else {
                                             isPass = true;
                                             common.closeDialog(LoginActivity.this);
-                                            common.showAlertBox("Incorrect Password", "ok", "", LoginActivity.this);
+                                            common.showAlertBox("name missing", "ok", "", LoginActivity.this);
                                         }
                                     } else {
                                         isPass = true;
                                         common.closeDialog(LoginActivity.this);
-                                        common.showAlertBox("No Work Assigned","ok","",LoginActivity.this);
+                                        common.showAlertBox("password missing", "ok", "", LoginActivity.this);
                                     }
-
                                 } else {
                                     isPass = true;
                                     common.closeDialog(LoginActivity.this);
-                                    common.showAlertBox("name missing", "ok", "", LoginActivity.this);
+                                    common.showAlertBox("InActive User", "ok", "", LoginActivity.this);
                                 }
                             } else {
                                 isPass = true;
                                 common.closeDialog(LoginActivity.this);
-                                common.showAlertBox("password missing", "ok", "", LoginActivity.this);
+                                common.showAlertBox("Incorrect Username", "ok", "", LoginActivity.this);
                             }
-                        } else {
-                            isPass = true;
-                            common.closeDialog(LoginActivity.this);
-                            common.showAlertBox("InActive User", "ok", "", LoginActivity.this);
                         }
-                    } else {
-                        isPass = true;
-                        common.closeDialog(LoginActivity.this);
-                        common.showAlertBox("Incorrect Username", "ok", "", LoginActivity.this);
-                    }
-                }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
 
-                }
-            });
+                        }
+                    });
         }
     }
 

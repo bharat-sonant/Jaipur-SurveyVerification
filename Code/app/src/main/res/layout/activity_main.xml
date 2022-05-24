@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorPrimaryDark"
+    android:gravity="center"
     android:orientation="vertical"
     android:weightSum="100"
-    android:gravity="center"
-    android:background="@color/colorPrimaryDark"
     tools:context=".MainActivity">
 
     <ImageView
@@ -16,51 +15,51 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="8dp"
-        app:srcCompat="@drawable/splash_screen_icon"/>
+        app:srcCompat="@drawable/splash_screen_icon" />
 
 
-<!--    <FrameLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="0dp"-->
-<!--        android:layout_weight="49.5"-->
-<!--        android:background="@drawable/sikarimage">-->
-<!--        <Button-->
-<!--            android:id="@+id/sikar"-->
-<!--            android:layout_width="120dp"-->
-<!--            android:layout_height="120dp"-->
-<!--            android:layout_margin="10dp"-->
-<!--            android:background="@drawable/cityname"-->
-<!--            android:text="Sikar"-->
-<!--            android:textColor="#fff"-->
-<!--            android:textAllCaps="false"-->
-<!--            android:layout_gravity="right|bottom"-->
-<!--            android:textSize="16sp"/>-->
-<!--    </FrameLayout>-->
+    <!--    <FrameLayout-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="0dp"-->
+    <!--        android:layout_weight="49.5"-->
+    <!--        android:background="@drawable/sikarimage">-->
+    <!--        <Button-->
+    <!--            android:id="@+id/sikar"-->
+    <!--            android:layout_width="120dp"-->
+    <!--            android:layout_height="120dp"-->
+    <!--            android:layout_margin="10dp"-->
+    <!--            android:background="@drawable/cityname"-->
+    <!--            android:text="Sikar"-->
+    <!--            android:textColor="#fff"-->
+    <!--            android:textAllCaps="false"-->
+    <!--            android:layout_gravity="right|bottom"-->
+    <!--            android:textSize="16sp"/>-->
+    <!--    </FrameLayout>-->
 
-<!--    <View-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="0dp"-->
-<!--        android:layout_weight="1"-->
-<!--        android:background="#277013" />-->
+    <!--    <View-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="0dp"-->
+    <!--        android:layout_weight="1"-->
+    <!--        android:background="#277013" />-->
 
-<!--    <FrameLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="0dp"-->
-<!--        android:layout_weight="49.5"-->
-<!--        android:background="@drawable/reengusimage">-->
+    <!--    <FrameLayout-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="0dp"-->
+    <!--        android:layout_weight="49.5"-->
+    <!--        android:background="@drawable/reengusimage">-->
 
-<!--        <Button-->
-<!--            android:id="@+id/reengus"-->
-<!--            android:layout_width="120dp"-->
-<!--            android:layout_height="120dp"-->
-<!--            android:layout_gravity="bottom|right"-->
-<!--            android:layout_margin="10dp"-->
-<!--            android:background="@drawable/cityname"-->
-<!--            android:text="Reengus"-->
-<!--            android:textAllCaps="false"-->
-<!--            android:textColor="#fff"-->
-<!--            android:textSize="16sp"/>-->
-<!--    </FrameLayout>-->
+    <!--        <Button-->
+    <!--            android:id="@+id/reengus"-->
+    <!--            android:layout_width="120dp"-->
+    <!--            android:layout_height="120dp"-->
+    <!--            android:layout_gravity="bottom|right"-->
+    <!--            android:layout_margin="10dp"-->
+    <!--            android:background="@drawable/cityname"-->
+    <!--            android:text="Reengus"-->
+    <!--            android:textAllCaps="false"-->
+    <!--            android:textColor="#fff"-->
+    <!--            android:textSize="16sp"/>-->
+    <!--    </FrameLayout>-->
 
 
 </LinearLayout>

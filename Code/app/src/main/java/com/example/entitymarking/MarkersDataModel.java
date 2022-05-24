@@ -55,7 +55,7 @@ public class MarkersDataModel {
         this.markerNumber = markerNumber;
     }
 
-    public MarkersDataModel(boolean isAlreadyInstalled, boolean status, String date, String imageName, int houseType,int markerNumber) {
+    public MarkersDataModel(boolean isAlreadyInstalled, boolean status, String date, String imageName, int houseType, int markerNumber) {
         this.isAlreadyInstalled = isAlreadyInstalled;
         this.status = status;
         this.date = date;

@@ -247,11 +247,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         common.getDatabaseStoragePath(MapActivity.this).child("/Defaults/FinalHousesType.json")
                 .getMetadata().addOnSuccessListener(storageMetadata -> {
             long serverUpdation = storageMetadata.getCreationTimeMillis();
-            long localUpdation = common.getDatabaseSp(MapActivity.this).getLong("houseTypeLastUpdate",0);
+            long localUpdation = common.getDatabaseSp(MapActivity.this).getLong("houseTypeLastUpdate", 0);
             if (serverUpdation != localUpdation) {
                 common.getDatabaseSp(MapActivity.this).edit().putLong("houseTypeLastUpdate", serverUpdation).apply();
                 try {
-                    File local = File.createTempFile("temp","txt");
+                    File local = File.createTempFile("temp", "txt");
                     common.getDatabaseStoragePath(MapActivity.this)
                             .child("/Defaults/FinalHousesType.json")
                             .getFile(local).addOnCompleteListener(task -> {
@@ -278,18 +278,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         });
     }
 
-    private void parseSpinnerData(){
+    private void parseSpinnerData() {
         try {
-            JSONArray arr = new JSONArray(common.getDatabaseSp(MapActivity.this).getString("houseType",""));
+            JSONArray arr = new JSONArray(common.getDatabaseSp(MapActivity.this).getString("houseType", ""));
             houseList = new ArrayList<>();
             houseDataHashMap = new HashMap<>();
             houseList.add("Select House Type");
-            for (int i = 0 ; i < arr.length() ; i++ )
-            {
+            for (int i = 0; i < arr.length(); i++) {
                 if (!arr.get(i).toString().equalsIgnoreCase("null")) {
                     JSONObject o = arr.getJSONObject(i);
                     String[] tempStr = String.valueOf(o.get("name")).split("\\(");
-                    houseDataHashMap.put(String.valueOf(tempStr[0]),i);
+                    houseDataHashMap.put(String.valueOf(tempStr[0]), i);
                     houseList.add(tempStr[0]);
                 }
             }
@@ -330,15 +329,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @RequiresApi(api = Build.VERSION_CODES.P)
     private void fetchWardJson() {
         StorageReference storageReference = FirebaseStorage.getInstance().getReference();
-        storageReference.child(preferences.getString("storagePath","") + "/WardLinesHouseJson/" + selectedWard + "/mapUpdateHistoryJson.json").getMetadata().addOnSuccessListener(storageMetadata -> {
+        storageReference.child(preferences.getString("storagePath", "") + "/WardLinesHouseJson/" + selectedWard + "/mapUpdateHistoryJson.json").getMetadata().addOnSuccessListener(storageMetadata -> {
             long fileCreationTime = storageMetadata.getCreationTimeMillis();
-            long fileDownloadTime = preferences.getLong(preferences.getString("storagePath","") + "" + selectedWard + "mapUpdateHistoryJsonDownloadTime", 0);
+            long fileDownloadTime = preferences.getLong(preferences.getString("storagePath", "") + "" + selectedWard + "mapUpdateHistoryJsonDownloadTime", 0);
             if (fileDownloadTime != fileCreationTime) {
-                storageReference.child(preferences.getString("storagePath","") + "/WardLinesHouseJson/" + selectedWard + "/mapUpdateHistoryJson.json").getBytes(10000000).addOnSuccessListener(taskSnapshot -> {
+                storageReference.child(preferences.getString("storagePath", "") + "/WardLinesHouseJson/" + selectedWard + "/mapUpdateHistoryJson.json").getBytes(10000000).addOnSuccessListener(taskSnapshot -> {
                     try {
                         String str = new String(taskSnapshot, StandardCharsets.UTF_8);
-                        preferences.edit().putString(preferences.getString("storagePath","") + selectedWard + "mapUpdateHistoryJson", str).apply();
-                        preferences.edit().putLong(preferences.getString("storagePath","") + "" + selectedWard + "mapUpdateHistoryJsonDownloadTime", fileCreationTime).apply();
+                        preferences.edit().putString(preferences.getString("storagePath", "") + selectedWard + "mapUpdateHistoryJson", str).apply();
+                        preferences.edit().putLong(preferences.getString("storagePath", "") + "" + selectedWard + "mapUpdateHistoryJsonDownloadTime", fileCreationTime).apply();
                         checkDate(selectedWard);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -353,7 +352,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @RequiresApi(api = Build.VERSION_CODES.P)
     private void checkDate(String wardNo) {
         try {
-            JSONArray jsonArray = new JSONArray(preferences.getString(preferences.getString("storagePath","") + wardNo + "mapUpdateHistoryJson", ""));
+            JSONArray jsonArray = new JSONArray(preferences.getString(preferences.getString("storagePath", "") + wardNo + "mapUpdateHistoryJson", ""));
             for (int i = jsonArray.length() - 1; i >= 0; i--) {
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
                 try {
@@ -361,11 +360,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     Date date2 = format.parse(jsonArray.getString(i));
                     if (date1.after(date2)) {
                         preferences.edit().putString("commonReferenceDate", String.valueOf(jsonArray.getString(i))).apply();
-                        fileMetaDownload(String.valueOf(jsonArray.getString(i)),wardNo);
+                        fileMetaDownload(String.valueOf(jsonArray.getString(i)), wardNo);
                         break;
                     } else if (date1.equals(date2)) {
                         preferences.edit().putString("commonReferenceDate", String.valueOf(jsonArray.getString(i))).apply();
-                        fileMetaDownload(String.valueOf(jsonArray.getString(i)),wardNo);
+                        fileMetaDownload(String.valueOf(jsonArray.getString(i)), wardNo);
                         break;
                     }
                 } catch (ParseException e) {
@@ -380,20 +379,20 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @RequiresApi(api = Build.VERSION_CODES.P)
     private void fileMetaDownload(String dates, String wardNo) {
         StorageReference storageReference = FirebaseStorage.getInstance().getReference();
-        storageReference.child(preferences.getString("storagePath","") + "/WardLinesHouseJson/" + wardNo + "/" + dates + ".json").getMetadata().addOnSuccessListener(storageMetadata -> {
+        storageReference.child(preferences.getString("storagePath", "") + "/WardLinesHouseJson/" + wardNo + "/" + dates + ".json").getMetadata().addOnSuccessListener(storageMetadata -> {
             long fileCreationTime = storageMetadata.getCreationTimeMillis();
-            long fileDownloadTime = preferences.getLong(preferences.getString("storagePath","") + wardNo + dates + "DownloadTime", 0);
+            long fileDownloadTime = preferences.getLong(preferences.getString("storagePath", "") + wardNo + dates + "DownloadTime", 0);
             if (fileDownloadTime != fileCreationTime) {
-                storageReference.child(preferences.getString("storagePath","") + "/WardLinesHouseJson/" + wardNo + "/" + dates + ".json").getBytes(10000000).addOnSuccessListener(taskSnapshot -> {
+                storageReference.child(preferences.getString("storagePath", "") + "/WardLinesHouseJson/" + wardNo + "/" + dates + ".json").getBytes(10000000).addOnSuccessListener(taskSnapshot -> {
                     try {
                         String str = new String(taskSnapshot, StandardCharsets.UTF_8);
                         common.getDatabaseSp(MapActivity.this).edit().putString("wardJSON", str).apply();
-                        preferences.edit().putLong(preferences.getString("storagePath","") + wardNo + dates + "DownloadTime", fileCreationTime).apply();
+                        preferences.edit().putLong(preferences.getString("storagePath", "") + wardNo + dates + "DownloadTime", fileCreationTime).apply();
                         prepareDB();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                }).addOnFailureListener(Ex->{
+                }).addOnFailureListener(Ex -> {
                     common.closeDialog(this);
                     AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
                     builder.setMessage("No Data Found").setCancelable(false)
@@ -408,7 +407,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     AlertDialog alertDialog = builder.create();
                     alertDialog.show();
                 });
-            }else {
+            } else {
                 prepareDB();
             }
         });
@@ -416,7 +415,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void prepareDB() {
         try {
-            JSONObject wardJSONObject = new JSONObject(common.getDatabaseSp(MapActivity.this).getString("wardJSON",""));
+            JSONObject wardJSONObject = new JSONObject(common.getDatabaseSp(MapActivity.this).getString("wardJSON", ""));
             Iterator<String> keys = wardJSONObject.keys();
             dbColl = new ArrayList<>();
             while (keys.hasNext()) {

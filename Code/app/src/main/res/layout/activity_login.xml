@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -13,26 +12,26 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:gravity="center"
         android:layout_weight="4"
-        android:orientation="vertical"
-        android:background="@drawable/below_toolbar_drawble">
+        android:background="@drawable/below_toolbar_drawble"
+        android:gravity="center"
+        android:orientation="vertical">
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="8dp"
-            android:src="@drawable/login_icon"/>
+            android:src="@drawable/login_icon" />
 
         <TextView
             android:id="@+id/screen_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Login"
             android:layout_marginTop="8dp"
+            android:text="Login"
             android:textColor="#D2F7F7F7"
             android:textSize="18dp"
-            android:textStyle="bold"/>
+            android:textStyle="bold" />
 
     </LinearLayout>
 
@@ -40,45 +39,28 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="6"
         android:layout_gravity="center"
+        android:layout_weight="6"
         android:gravity="center|top"
         android:orientation="vertical"
         android:paddingTop="16dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
+        <Button
+            android:id="@+id/login"
+            android:layout_width="wrap_content"
+            android:layout_height="55dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="40dp"
             android:layout_marginEnd="16dp"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:weightSum="100">
-
-            <ImageView
-                android:layout_width="25dp"
-                android:layout_height="25dp"
-                android:layout_gravity="bottom"
-                android:layout_marginBottom="5dp"
-                android:background="@drawable/ic_person" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/userUsername"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="100">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/username"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:inputType="number"
-                    android:hint="User Name" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-        </LinearLayout>
+            android:layout_marginBottom="40dp"
+            android:background="@drawable/rounded_button"
+            android:onClick="onLoginClick"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:text="Log In"
+            android:textAllCaps="false"
+            android:textColor="#D2F7F7F7"
+            android:textSize="18dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -108,28 +90,45 @@
                     android:id="@+id/password"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:inputType="textPassword"
-                    android:hint="Password" />
+                    android:hint="Password"
+                    android:inputType="textPassword" />
             </com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>
 
-        <Button
-            android:id="@+id/login"
-            android:layout_width="wrap_content"
-            android:layout_height="55dp"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="10dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="40dp"
-            android:background="@drawable/rounded_button"
-            android:text="Log In"
-            android:textAllCaps="false"
-            android:onClick="onLoginClick"
-            android:paddingLeft="20dp"
-            android:paddingRight="20dp"
-            android:textColor="#D2F7F7F7"
-            android:textSize="18dp" />
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:weightSum="100">
+
+            <ImageView
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_gravity="bottom"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/ic_person" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/userUsername"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="100">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/username"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:hint="User Name"
+                    android:inputType="number" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>
