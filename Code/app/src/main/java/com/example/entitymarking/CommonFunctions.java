@@ -23,6 +23,7 @@ import android.view.animation.Interpolator;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -66,7 +67,7 @@ public class CommonFunctions {
     }
 
     public StorageReference getDatabaseStoragePath(Context context) {
-        return FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/"+getDatabaseSp(context).getString("storagePath", " "));
+        return FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + getDatabaseSp(context).getString("storagePath", " "));
     }
 
     public void showAlertBox(String message, String pBtn, String nBtn, Context ctx) {
@@ -277,10 +278,11 @@ public class CommonFunctions {
                 if (currentData.getValue() == null) {
                     currentData.setValue(1);
                 } else {
-                    currentData.setValue(String.valueOf((Integer.parseInt(currentData.getValue().toString())  + 1)));
+                    currentData.setValue(String.valueOf((Integer.parseInt(currentData.getValue().toString()) + 1)));
                 }
                 return Transaction.success(currentData);
             }
+
             @Override
             public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
             }
@@ -295,7 +297,7 @@ public class CommonFunctions {
                 if (currentData.getValue() == null) {
                     currentData.setValue("");
                 } else {
-                    currentData.setValue(String.valueOf((Integer.parseInt(currentData.getValue().toString())  - 1)));
+                    currentData.setValue(String.valueOf((Integer.parseInt(currentData.getValue().toString()) - 1)));
                 }
                 return Transaction.success(currentData);
             }
@@ -309,32 +311,32 @@ public class CommonFunctions {
     public void mFetchAlreadyInstalledCBHeading(Context context) {
         FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/Common/EntityMarkingData/alreadyInstalledCheckBoxText.json")
                 .getMetadata().addOnSuccessListener(storageMetadata -> {
-                    long serverUpdation = storageMetadata.getCreationTimeMillis();
-                    long localUpdation = getDatabaseSp(context).getLong("alreadyInstalledLastUpdate",0);
-                    if (serverUpdation != localUpdation) {
-                        getDatabaseSp(context).edit().putLong("alreadyInstalledLastUpdate", serverUpdation).apply();
+            long serverUpdation = storageMetadata.getCreationTimeMillis();
+            long localUpdation = getDatabaseSp(context).getLong("alreadyInstalledLastUpdate", 0);
+            if (serverUpdation != localUpdation) {
+                getDatabaseSp(context).edit().putLong("alreadyInstalledLastUpdate", serverUpdation).apply();
+                try {
+                    File local = File.createTempFile("temp", "txt");
+                    FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/Common/EntityMarkingData/alreadyInstalledCheckBoxText.json")
+                            .getFile(local).addOnCompleteListener(task -> {
                         try {
-                            File local = File.createTempFile("temp","txt");
-                            FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/Common/EntityMarkingData/alreadyInstalledCheckBoxText.json")
-                                    .getFile(local).addOnCompleteListener(task -> {
-                                        try {
-                                            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(local)));
-                                            StringBuilder sb = new StringBuilder();
-                                            String str;
-                                            while ((str = br.readLine()) != null) {
-                                                sb.append(str);
-                                            }
-                                            getDatabaseSp(context).edit().putString("alreadyInstalledCbHeading", sb.toString().trim()).apply();
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                        }
-                                    });
-                        } catch (IOException e) {
+                            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(local)));
+                            StringBuilder sb = new StringBuilder();
+                            String str;
+                            while ((str = br.readLine()) != null) {
+                                sb.append(str);
+                            }
+                            getDatabaseSp(context).edit().putString("alreadyInstalledCbHeading", sb.toString().trim()).apply();
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-                    }
-                });
+            }
+        });
     }
 
 
@@ -363,7 +365,7 @@ public class CommonFunctions {
                 path = "https://dtdniwai.firebaseio.com/";
                 break;
             case "Behror":
-                path="https://dtdbehror.firebaseio.com/";
+                path = "https://dtdbehror.firebaseio.com/";
                 break;
             default:
                 path = "https://dtdnavigator.firebaseio.com/";

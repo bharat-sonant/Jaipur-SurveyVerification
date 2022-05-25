@@ -4,6 +4,19 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/top_corner"
+        android:gravity="center"
+        android:paddingLeft="16dp"
+        android:paddingTop="20dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="8dp"
+        android:text="Proceed to save"
+        android:textColor="@color/black"
+        android:textSize="18dp" />
+
     <ImageView
         android:id="@+id/image_preview"
         android:layout_width="wrap_content"
@@ -47,17 +60,6 @@
 
     </LinearLayout>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/top_corner"
-        android:gravity="center"
-        android:paddingLeft="16dp"
-        android:paddingTop="20dp"
-        android:paddingRight="16dp"
-        android:paddingBottom="8dp"
-        android:text="Proceed to save"
-        android:textColor="@color/black"
-        android:textSize="18dp" />
+
 
 </LinearLayout>
