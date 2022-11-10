@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="formpageviewmodel"
+            type="com.wevois.surveyapproval.SubFormPageActivity" />
+    </data>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true">
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:background="?attr/colorPrimary"
+                android:gravity="center"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:popupTheme="@style/AppTheme.PopupOverlay">
+
+                <TextView
+                    android:id="@+id/toolbar_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="House Detail"
+                    android:textColor="@color/white"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/BackBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ic_arrow_back_black_24dp"
+                    android:textColor="@color/white"
+                    android:textSize="22sp" />
+
+            </androidx.appcompat.widget.Toolbar>
+
+
+            <EditText
+                android:id="@+id/etName"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/border"
+                android:ems="10"
+                android:hint="@string/enter_name"
+                android:inputType="textCapSentences"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.578"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+            <EditText
+                android:id="@+id/etMobile"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="20sp"
+                android:layout_marginEnd="10dp"
+                android:layout_weight="100"
+                android:background="@drawable/border"
+                android:digits="1234567890,"
+                android:ems="10"
+                android:hint="@string/enter_mobile_no"
+                android:inputType="phone"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/etName"
+                app:layout_constraintTop_toBottomOf="@+id/etName" />
+
+            <EditText
+                android:id="@+id/etAddress"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="20sp"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/border"
+                android:ems="10"
+                android:hint="@string/enter_address"
+                android:inputType="textCapSentences"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:visibility="visible"
+                app:layout_constraintStart_toStartOf="@+id/etMobile"
+                app:layout_constraintTop_toBottomOf="@+id/etMobile" />
+
+            <EditText
+                android:id="@+id/etType"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="20sp"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/border"
+                android:ems="10"
+                android:hint="@string/enter_address"
+                android:inputType="textCapSentences"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:visibility="visible"
+                app:layout_constraintStart_toStartOf="@+id/etAddress"
+                app:layout_constraintTop_toBottomOf="@+id/etAddress" />
+
+            <Button
+                android:id="@+id/btnSaveDetails"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginEnd="10dp"
+                android:layout_weight="100"
+                android:background="@color/colorPrimary"
+                android:text="@string/save_details"
+                android:textColor="@color/white"
+                android:textSize="17sp"
+                app:layout_constraintTop_toBottomOf="@id/etType" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</layout>

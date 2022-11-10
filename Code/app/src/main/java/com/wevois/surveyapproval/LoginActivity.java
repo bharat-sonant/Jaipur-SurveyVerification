@@ -18,8 +18,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
-
 public class LoginActivity extends AppCompatActivity {
+
     TextInputEditText userIdEt, userPassWordEt;
     TextInputLayout userLayout, passwordLayout;
     Button loginBtn;
@@ -170,6 +170,5 @@ public class LoginActivity extends AppCompatActivity {
                     });
         }
     }
-
 
 }
