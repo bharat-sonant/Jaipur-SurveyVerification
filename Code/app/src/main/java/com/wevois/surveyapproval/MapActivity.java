@@ -1,8 +1,9 @@
-package com.example.entitymarking;
+package com.wevois.surveyapproval;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -29,6 +30,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -81,6 +83,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.reader.ble.impl.EpcReply;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -100,11 +103,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
+
     String selectedWard = null, selectedCity, userId, date, cbText;
     ImageView imageViewForRejectedMarker;
     int currentLineNumber = 0;                      // use + 1 to get currentLine;
@@ -139,6 +144,107 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             GPS_CODE_FOR_MODIFICATION = 7777,
             FOCUS_AREA_SIZE = 300,
             PERMISSION_CODE = 1000;
+    private Handler mHandler;
+    private String sn = "";
+    private boolean inventorying = false;
+    private boolean btnInventorying = false;
+    JSONObject scanDataObject;
+
+    private Runnable inventoryRunnable = new Runnable() {
+        @Override
+        public void run() {
+            reader.singleInventory((int status, List<EpcReply> list) -> {
+                if (status == 0) {
+                    for (EpcReply epcReply : list) {
+                        Log.e("EPC Reply ", ByteUtils.epcBytes2Hex(epcReply.getEpc()));
+                        inventorying = false;
+//                        onInventoryAction();
+//                        mEPCAdapter.addEpcRecord(ByteUtils.epcBytes2Hex(epcReply.getEpc()), epcReply.getRssi());
+//                        etRFIDNumber.setText(ByteUtils.epcBytes2Hex(epcReply.getEpc()));
+//                        Toast.makeText(MapActivity.this, "" + ByteUtils.epcBytes2Hex(epcReply.getEpc()), Toast.LENGTH_SHORT).show();
+                        try {
+                            String rfid = ByteUtils.epcBytes2Hex(epcReply.getEpc());
+                            if (scanDataObject.has(rfid)) {
+                                JSONArray jsonArray = scanDataObject.getJSONArray(rfid);
+                                String serialNo = jsonArray.get(0).toString();
+                                Log.e("SerialNo", serialNo);
+                                getHouseLineDetails(serialNo);
+//                                preferences.edit().putString("cardNo", cardNo).apply();
+//                                preferences.edit().putString("cardNoPre", cardNo).apply();
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        /*String str = ByteUtils.epcBytes2Hex(epcReply.getEpc());
+                        if (str.length() >= 24) {
+                            cardScanMethod(scanCard.getText().toString(), scanCard);
+                        }else {
+                            Toast.makeText(MainActivity.this,"Please Card Scan Again",Toast.LENGTH_SHORT).show();
+                        }*/
+
+                    }
+//                    final int total = mEPCAdapter.getTotal();
+                    runOnUiThread(() -> {
+//                        tv_total.setText(String.valueOf(total));
+                    });
+                } else {
+                    mHandler.removeCallbacks(inventoryRunnable);
+                    inventorying = false;
+                    btnInventorying = false;
+//                    btnRead.setText(getResources().getString(R.string.text_btn_inventory_start));
+                    if (reader.isConnected()) {
+//                        updateControls(true);
+//                        btnRead.setEnabled(true);
+                    }
+                    if (status == -205) {
+                        //inventory tag or other tag operation maybe return -205
+                        CustomDialog.showLowPower(MapActivity.this);
+                    } else {
+                        showToast(String.format(getResources().getString(R.string.toast_err_start_inventory), status));
+                    }
+                }
+                if (inventorying) {
+                    mHandler.postDelayed(inventoryRunnable, 400);
+                }
+            });
+        }
+    };
+
+    private Runnable btnInventoryRunnable = new Runnable() {
+        @Override
+        public void run() {
+            reader.singleInventory((status, list) -> {
+                if (status == 0) {
+                    for (EpcReply epcReply : list) {
+//                        mEPCAdapter.addEpcRecord(ByteUtils.epcBytes2Hex(epcReply.getEpc()), epcReply.getRssi());
+                    }
+//                    final int total = mEPCAdapter.getTotal();
+                    runOnUiThread(() -> {
+//                        tv_total.setText(String.valueOf(total));
+                    });
+                } else {
+                    mHandler.removeCallbacks(btnInventoryRunnable);
+                    inventorying = false;
+                    btnInventorying = false;
+//                    btnRead.setText(getResources().getString(R.string.text_btn_inventory_start));
+                    if (reader.isConnected()) {
+//                        updateControls(true);
+//                        btnRead.setEnabled(true);
+                    }
+                    if (status == -205) {
+                        //inventory tag or other tag operation maybe return -205
+                        CustomDialog.showLowPower(MapActivity.this);
+                    } else {
+                        showToast(String.format(getResources().getString(R.string.toast_err_start_inventory), status));
+                    }
+                }
+                if (btnInventorying) {
+                    mHandler.postDelayed(btnInventoryRunnable, 200);
+                }
+            });
+        }
+    };
 
     @SuppressLint("SimpleDateFormat")
     @RequiresApi(api = Build.VERSION_CODES.P)
@@ -156,6 +262,63 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void getHouseLineDetails(String SerialNo) {
+        common.setProgressDialog("Please Wait..", "",this, this);
+        rootRef.child("CardWardMapping/"+SerialNo).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    if (dataSnapshot.hasChild("line")) {
+                        Log.e("Line No",dataSnapshot.child("line").getValue().toString());
+                        String lineno = dataSnapshot.child("line").getValue().toString();
+                        String wardno = dataSnapshot.child("ward").getValue().toString();
+                        getHouseDetails(lineno,wardno,SerialNo);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void getHouseDetails(String line,String ward, String SerialNo) {
+        common.setProgressDialog("Please Wait..", "",this, this);
+        rootRef.child("Houses/"+ward+"/"+line+"/"+SerialNo).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    if (dataSnapshot.hasChild("name")) {
+                        common.closeDialog(MapActivity.this);
+                        Log.e("Name",dataSnapshot.child("name").getValue().toString());
+                        String name = dataSnapshot.child("name").getValue().toString();
+                        String address = dataSnapshot.child("address").getValue().toString();
+                        String mobile = dataSnapshot.child("mobile").getValue().toString();
+                        String type = dataSnapshot.child("cardType").getValue().toString();
+                        String ward = dataSnapshot.child("ward").getValue().toString();
+                        Intent intent = new Intent(MapActivity.this,SubFormPageActivity.class);
+                        intent.putExtra("name",name);
+                        intent.putExtra("address",address);
+                        intent.putExtra("mobile",mobile);
+                        intent.putExtra("type",type);
+                        intent.putExtra("ward",ward);
+                        intent.putExtra("line",line);
+                        intent.putExtra("serail",SerialNo);
+                        startActivity(intent);
+
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     @SuppressLint({"ResourceType", "SimpleDateFormat"})
@@ -187,6 +350,119 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             lastScanTimeVEL();
             checkVersionForTheApplication();
         }
+        mHandler = new Handler(Looper.getMainLooper());
+        findViewById(R.id.dataScan).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                inventorying = true;
+                onInventoryAction();
+            }
+        });
+        getFileDownload();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.P)
+    private void getFileDownload() {
+        StorageReference storageReference = FirebaseStorage.getInstance().getReference();
+        storageReference.child(preferences.getString("storagePath", "") + "/CardScanData/CardScanData" + ".json").getBytes(10000000).addOnSuccessListener(taskSnapshot -> {
+            try {
+                String str = new String(taskSnapshot, StandardCharsets.UTF_8);
+                /*File root = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "WardJson/" +
+                        storagePath + "/" + wardNo);
+                if (!root.exists()) {
+                    root.mkdirs();
+                }
+                File wardFile = new File(root, dates + ".json");
+                if (wardFile.exists()) {
+                    wardFile.delete();
+                }
+                FileWriter writer = new FileWriter(wardFile, true);
+                writer.append(str);
+                writer.flush();
+                writer.close();
+                Log.e("setListeners", "Set Listener");
+                readJsonFile();
+                Log.e("setListeners", "Set Listener");*/
+                preferences.edit().putString("CardScanData.json", str).commit();
+                String fileName = "CardScanData.json";
+                Log.e("file name", fileName);
+                readJsonFile(fileName);
+//                setListeners();
+                common.closeDialog(this);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+    }
+
+    private void readJsonFile(String file) {
+        try {
+            /*File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "WardJson/" +
+                    storagePath + "/" + preferences.getString("wardNo", "") + "/" + preferences.getString("commonReferenceDate", "") + ".json");
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            StringBuilder result = new StringBuilder();
+            String str;
+            while ((str = br.readLine()) != null) {
+                result.append(str);
+            }*/
+
+            Log.e("json file", String.valueOf(preferences.getString(file, "")));
+            scanDataObject = new JSONObject(String.valueOf(preferences.getString(file, "")));
+
+        } catch (Exception ignored) {
+        }
+    }
+
+    @Override
+    protected void onReaderConnect() {
+        super.onReaderConnect();
+        reader.getSerialNumber((status, serialNumber) -> {
+            if (status == 0) {
+                sn = String.format(Locale.getDefault(), "%010d", serialNumber);
+                ActionBar actionBar = getSupportActionBar();
+//                inventorying = true;
+//                onInventoryAction();
+                if (actionBar != null) {
+                    actionBar.setTitle(sn);
+                }
+            }
+//            updateControls(true);
+//            btnRead.setEnabled(true);
+        });
+    }
+
+    @Override
+    protected void onReaderDisconnect() {
+        super.onReaderDisconnect();
+//        updateControls(false);
+//        btnRead.setEnabled(false);
+//        btnRead.setText(getResources().getString(R.string.text_btn_inventory_start));
+    }
+
+    @Override
+    protected void onReaderBtnPress() {
+        super.onReaderBtnPress();
+        Log.e("onReaderBtnPress", "onReaderBtnPress");
+        if (inventorying) {
+            mHandler.removeCallbacks(inventoryRunnable);
+            inventorying = false;
+        }
+//        btnRead.setText(getResources().getString(R.string.text_btn_inventory_start));
+//        updateControls(false);
+//        btnRead.setEnabled(false);
+        mHandler.postDelayed(btnInventoryRunnable, 200);
+        btnInventorying = true;
+    }
+
+    @Override
+    protected void onReaderBtnRelease() {
+        super.onReaderBtnRelease();
+        mHandler.removeCallbacks(btnInventoryRunnable);
+        btnInventorying = false;
+//        btnRead.setText(getResources().getString(R.string.text_btn_inventory_start));
+//        updateControls(true);
+//        btnRead.setEnabled(true);
     }
 
     private void setRB() {
@@ -246,36 +522,36 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void fHouseTypeFromSto() {
         common.getDatabaseStoragePath(MapActivity.this).child("/Defaults/FinalHousesType.json")
                 .getMetadata().addOnSuccessListener(storageMetadata -> {
-            long serverUpdation = storageMetadata.getCreationTimeMillis();
-            long localUpdation = common.getDatabaseSp(MapActivity.this).getLong("houseTypeLastUpdate", 0);
-            if (serverUpdation != localUpdation) {
-                common.getDatabaseSp(MapActivity.this).edit().putLong("houseTypeLastUpdate", serverUpdation).apply();
-                try {
-                    File local = File.createTempFile("temp", "txt");
-                    common.getDatabaseStoragePath(MapActivity.this)
-                            .child("/Defaults/FinalHousesType.json")
-                            .getFile(local).addOnCompleteListener(task -> {
+                    long serverUpdation = storageMetadata.getCreationTimeMillis();
+                    long localUpdation = common.getDatabaseSp(MapActivity.this).getLong("houseTypeLastUpdate", 0);
+                    if (serverUpdation != localUpdation) {
+                        common.getDatabaseSp(MapActivity.this).edit().putLong("houseTypeLastUpdate", serverUpdation).apply();
                         try {
-                            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(local)));
-                            StringBuilder sb = new StringBuilder();
-                            String str;
-                            while ((str = br.readLine()) != null) {
-                                sb.append(str);
-                            }
-                            common.getDatabaseSp(MapActivity.this).edit().putString("houseType", sb.toString().trim()).apply();
-                            parseSpinnerData();
-                        } catch (Exception e) {
+                            File local = File.createTempFile("temp", "txt");
+                            common.getDatabaseStoragePath(MapActivity.this)
+                                    .child("/Defaults/FinalHousesType.json")
+                                    .getFile(local).addOnCompleteListener(task -> {
+                                        try {
+                                            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(local)));
+                                            StringBuilder sb = new StringBuilder();
+                                            String str;
+                                            while ((str = br.readLine()) != null) {
+                                                sb.append(str);
+                                            }
+                                            common.getDatabaseSp(MapActivity.this).edit().putString("houseType", sb.toString().trim()).apply();
+                                            parseSpinnerData();
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    });
+                        } catch (IOException e) {
                             e.printStackTrace();
                         }
-                    });
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
 
-            } else {
-                parseSpinnerData();
-            }
-        });
+                    } else {
+                        parseSpinnerData();
+                    }
+                });
     }
 
     private void parseSpinnerData() {
@@ -469,9 +745,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                     Integer.parseInt(String.valueOf(snapshot.child("houseType").getValue())),
                                     Integer.parseInt(String.valueOf(snapshot.getKey()))));
 
-                            mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).icon(common.BitmapFromVector(getApplicationContext(), R.drawable.rejected_marker_icon)));
+//                            mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).icon(common.BitmapFromVector(getApplicationContext(), R.drawable.rejected_marker_icon)));
                         } else {
-                            mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).icon(common.BitmapFromVector(getApplicationContext(), R.drawable.gharicon)));
+//                            mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).icon(common.BitmapFromVector(getApplicationContext(), R.drawable.gharicon)));
                         }
                     }
                 }
@@ -545,6 +821,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void checkGpsForEntity() {
+
         LocationServices.getSettingsClient(this).checkLocationSettings(new LocationSettingsRequest.Builder()
                 .addLocationRequest(new LocationRequest().setInterval(5000).setFastestInterval(1000).setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY))
                 .setAlwaysShow(true).setNeedBle(true).build()).addOnCompleteListener(task1 -> {
@@ -1093,6 +1370,20 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     protected void onDestroy() {
         super.onDestroy();
         removeListeners();
+
+        if (reader.isConnected()) {
+            if (inventorying) {
+                mHandler.removeCallbacks(inventoryRunnable);
+                inventorying = false;
+            }
+            if (btnInventorying) {
+                mHandler.removeCallbacks(btnInventoryRunnable);
+                btnInventorying = false;
+            }
+        }
+        if (reader.isConnected()) {
+            reader.disconnect();
+        }
     }
 
     private void removeListeners() {
@@ -1547,4 +1838,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         });
     }
 
+    public void onInventoryAction() {
+        if (inventorying) {
+            mHandler.post(inventoryRunnable);
+            inventorying = false;
+//            btnRead.setText(getResources().getString(R.string.text_btn_inventory_stop));
+//            updateControls(false);
+        } else {
+            mHandler.removeCallbacks(inventoryRunnable);
+            inventorying = false;
+//            btnRead.setText(getResources().getString(R.string.text_btn_inventory_start));
+//            updateControls(true);
+        }
+    }
 }

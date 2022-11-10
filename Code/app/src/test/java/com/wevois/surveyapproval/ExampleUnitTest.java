@@ -1,4 +1,4 @@
-package com.example.entitymarking;
+package com.wevois.surveyapproval;
 
 import org.junit.Test;
 

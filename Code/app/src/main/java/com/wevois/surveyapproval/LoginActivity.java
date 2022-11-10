@@ -1,4 +1,4 @@
-package com.example.entitymarking;
+package com.wevois.surveyapproval;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -52,7 +52,7 @@ public class LoginActivity extends AppCompatActivity {
         findViewById(R.id.screen_title).setOnLongClickListener(view -> {
             preferences.edit().putString("dbPath", "https://dtdnavigatortesting.firebaseio.com/").apply();
 //            preferences.edit().putString("dbPath", "https://dtdreengus.firebaseio.com/").apply();
-            preferences.edit().putString("storagePath", "Test").apply();
+            preferences.edit().putString("storagePath", "gs://dtdnavigator.appspot.com/Test/").apply();
 //            preferences.edit().putString("storagePath", "Reengus").apply();
             rootRef = common.getDatabaseRef(LoginActivity.this);
             common.showAlertBox("Testing Mode Enabled", "Ok", "", LoginActivity.this);
@@ -121,7 +121,7 @@ public class LoginActivity extends AppCompatActivity {
                                                     if (Boolean.parseBoolean(String.valueOf(snapshot.child("isActive").getValue()))) {
                                                         preferences.edit().putString("userId", userId).apply();
                                                         preferences.edit().putString("assignment", String.valueOf(snapshot.child("assignedWard").getValue())).apply();
-                                                        Intent intent = new Intent(LoginActivity.this, MapActivity.class);
+                                                        Intent intent = new Intent(LoginActivity.this, BleServiceActivity.class);
                                                         common.closeDialog(LoginActivity.this);
                                                         startActivity(intent);
                                                         finish();

@@ -1,4 +1,4 @@
-package com.example.entitymarking;
+package com.wevois.surveyapproval;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -56,7 +56,15 @@ public class CommonFunctions {
     LatLng previousLatLng;
     Marker markerManOne, markerManTwo, markerManThree, markerManFour, markerManFive, markerManSix, markerManStop;
     public static final int LOCATION_REQUEST = 500;
+    private static CommonFunctions single_instance = null;
 
+
+    public static CommonFunctions getInstance() {
+        if (single_instance == null) {
+            single_instance = new CommonFunctions();
+        }
+        return single_instance;
+    }
 
     public SharedPreferences getDatabaseSp(Context context) {
         return context.getSharedPreferences("LoginDetails", Context.MODE_PRIVATE);
@@ -121,6 +129,10 @@ public class CommonFunctions {
             }
         }
         return st;
+    }
+
+    public DatabaseReference getDatabaseForApplication(Context context) {
+        return FirebaseDatabase.getInstance(getDatabaseSp(context).getString("dbPath", "")).getReference();
     }
 
     public BitmapDescriptor BitmapFromVector(Context context, int vectorResId) {
@@ -346,6 +358,9 @@ public class CommonFunctions {
             case "Test":
                 path = "https://dtdnavigatortesting.firebaseio.com/";
                 break;
+            case"Tonk":
+                path ="https://dtdtonk.firebaseio.com/";
+                break;
             case "Reengus":
                 path = "https://dtdreengus.firebaseio.com/";
                 break;
@@ -363,6 +378,9 @@ public class CommonFunctions {
                 break;
             case "Niwai":
                 path = "https://dtdniwai.firebaseio.com/";
+                break;
+            case "Jaipur-Malviyanagar":
+                path = "https://jaipur-malviyanagar.firebaseio.com/";
                 break;
             case "Behror":
                 path = "https://dtdbehror.firebaseio.com/";

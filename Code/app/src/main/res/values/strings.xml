@@ -1,10 +1,28 @@
 <resources>
-    <string name="app_name">Entity Marking</string>
+    <string name="app_name">Survey Approval</string>
     <string name="title_activity_maps">Map</string>
     <string name="select_city_activity_label">Select City</string>
     <string name="sikar_btn_label">Sikar</string>
     <string name="reengus_btn_label">Reengus</string>
     <string name="slct_wrd_activity_label">Select Ward</string>
     <string name="already_installed_cb_text">पहले ही कार्ड का सर्वेक्षण किया जा चुका है</string>
+    <string name="text_hint_search_device">Drop down to search ble UHF reader</string>
+    <string name="connect">connect</string>
+    <string name="disconnect">disconnect</string>
+    <string name="text_dialog_no_device">There is no mac address of last connected device, please search for Bluetooth and connect to the device.</string>
+    <string name="text_dialog_btn_confirm">Confirm</string>
+    <string name="text_dialog_btn_cancel">Cancel</string>
+    <string name="text_dialog_last_device_mac">The mac address of last connected device is: %1$s , click \'confirm\' button to connect device.</string>
+    <string name="toast_err_start_inventory">inventory failed:%1$d</string>
+    <string name="toast_err_location_permission_denied">location permission denied</string>
+    <string name="toast_err_permission">permission exception</string>
+    <string name="toast_err_connect_failed">connect failed</string>
+    <string name="text_dialog_low_power">Reader is low power, please charge in time!</string>
+    <string name="text_dialog_turn_on_gps">Please turn on the GPS service of the phone to search bluetooth</string>
+    <string name="toast_err_disconnect">ble device is disconnected</string>
+    <string name="enter_name">Enter house holder name</string>
+    <string name="enter_mobile_no">"Enter House Holder Mobile "</string>
+    <string name="enter_address">Enter house owner address</string>
+    <string name="save_details">Verifie</string>
 </resources>
 

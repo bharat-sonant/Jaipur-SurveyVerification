@@ -1,4 +1,4 @@
-package com.example.entitymarking;
+package com.wevois.surveyapproval;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -259,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void mapIntent() {
-        Intent intent = new Intent(MainActivity.this, MapActivity.class);
+        Intent intent = new Intent(MainActivity.this, BleServiceActivity.class);
         startActivity(intent);
         finish();
     }

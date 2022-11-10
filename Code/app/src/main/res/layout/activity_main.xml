@@ -12,10 +12,10 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
         android:padding="8dp"
-        app:srcCompat="@drawable/splash_screen_icon" />
+        app:srcCompat="@drawable/entity_survey_app_logo" />
 
 
     <!--    <FrameLayout-->

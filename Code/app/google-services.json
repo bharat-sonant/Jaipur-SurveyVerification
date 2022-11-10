@@ -401,7 +401,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:381118272786:android:a5128c3c99448765ec0fcb",
         "android_client_info": {
-          "package_name": "com.example.entitymarking"
+          "package_name": "com.wevois.surveyapproval"
         }
       },
       "oauth_client": [
