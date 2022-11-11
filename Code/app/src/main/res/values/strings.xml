@@ -1,11 +1,12 @@
 <resources>
-    <string name="app_name">Survey Approval</string>
+    <string name="app_name">Survey Verification</string>
     <string name="title_activity_maps">Map</string>
     <string name="select_city_activity_label">Select City</string>
     <string name="sikar_btn_label">Sikar</string>
     <string name="reengus_btn_label">Reengus</string>
     <string name="slct_wrd_activity_label">Select Ward</string>
     <string name="already_installed_cb_text">पहले ही कार्ड का सर्वेक्षण किया जा चुका है</string>
+    <string name="note_revisit_house">NOTE :- अगर किसी भी वजह से सर्वे पूरा नहीं हो पाया है तो निचे दिए हुए \'Revisit House\' बटन पर क्लिक करे</string>
     <string name="text_hint_search_device">Drop down to search ble UHF reader</string>
     <string name="connect">connect</string>
     <string name="disconnect">disconnect</string>
@@ -24,5 +25,12 @@
     <string name="enter_mobile_no">"Enter House Holder Mobile "</string>
     <string name="enter_address">Enter house owner address</string>
     <string name="save_details">Verifie</string>
+    <string name="enter_total_houses">Enter Total Houses</string>
+    <string name="card_image">Card Image</string>
+    <string name="house_image">House Image</string>
+    <string name="houses">Houses</string>
+    <string name="business">Business</string>
+    <string name="welcome_to_wevois">Welcome to Wevois</string>
+    <string name="revisit">Revisit</string>
 </resources>
 

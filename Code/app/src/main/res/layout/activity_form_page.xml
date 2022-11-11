@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="false">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/etName"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/border"
+                android:ems="10"
+                android:hint="@string/enter_name"
+                android:inputType="textCapSentences"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:text="@{formpageviewmodel.userTv}"
+                app:addTextChangedListener="@{formpageviewmodel.userTvWatcher}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.578"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+            <EditText
+                android:id="@+id/etTotalHouse"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/border"
+                android:ems="10"
+                android:hint="@string/enter_total_houses"
+                android:inputType="number"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:text=""
+                android:visibility="@{formpageviewmodel.isVisible?View.VISIBLE:View.GONE}"
+                app:layout_constraintEnd_toEndOf="@+id/spnrHouseType"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/spnrHouseType"
+                app:layout_constraintTop_toBottomOf="@+id/spnrHouseType" />
+
+            <EditText
+                android:id="@+id/etAddress"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/border"
+                android:ems="10"
+                android:hint="@string/enter_address"
+                android:inputType="textCapSentences"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:text="@{formpageviewmodel.addressTv}"
+                app:addTextChangedListener="@{formpageviewmodel.addressTvWatcher}"
+                app:layout_constraintEnd_toEndOf="@+id/spnrHouseType"
+                app:layout_constraintStart_toStartOf="@+id/spnrHouseType"
+                app:layout_constraintTop_toBottomOf="@+id/etTotalHouse" />
+
+            <ImageView
+                android:id="@+id/add_more_row"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:src="@drawable/add_more"
+                android:visibility="@{formpageviewmodel.isMoreBtnVisible?View.VISIBLE:View.GONE}"
+                app:layout_constraintRight_toRightOf="@+id/etAddress"
+                app:layout_constraintTop_toBottomOf="@id/etAddress" />
+
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rcy_parisar_data"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:visibility="visible"
+                app:layout_constraintTop_toBottomOf="@+id/add_more_row" />
+
+
+            <LinearLayout
+                android:id="@+id/linearmobile"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginRight="10dp"
+                android:orientation="horizontal"
+                android:weightSum="100"
+                app:layout_constraintEnd_toEndOf="@+id/etName"
+                app:layout_constraintStart_toStartOf="@+id/etName"
+                app:layout_constraintTop_toBottomOf="@+id/etName">
+
+                <EditText
+                    android:id="@+id/etMobile"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="100"
+                    android:background="@drawable/border"
+                    android:digits="1234567890,"
+                    android:ems="10"
+                    android:hint="@string/enter_mobile_no"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:text="@{formpageviewmodel.mobileTv}"
+                    app:addTextChangedListener="@{formpageviewmodel.mobileTvWatcher}" />
+            </LinearLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/linearSave"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginRight="10dp"
+                android:orientation="vertical"
+                android:weightSum="100"
+                app:layout_constraintEnd_toEndOf="@+id/rcy_parisar_data"
+                app:layout_constraintHorizontal_bias="0.496"
+                app:layout_constraintStart_toStartOf="@+id/rcy_parisar_data"
+                app:layout_constraintTop_toBottomOf="@+id/rcy_parisar_data">
+
+                <RelativeLayout
+                    android:id="@+id/rltv_card_img"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="0dp"
+                    android:layout_marginBottom="50dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <Button
+                        android:id="@+id/button_image"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_centerVertical="true"
+                        android:background="@drawable/camerabutton"
+                        android:gravity="center_vertical"
+                        android:onClick="@{()->formpageviewmodel.saveImage()}"
+                        android:textAllCaps="false" />
+
+                    <TextView
+                        android:id="@+id/card_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20sp"
+                        android:layout_marginEnd="0dp"
+                        android:layout_toEndOf="@+id/button_image"
+                        android:gravity="center_vertical|center"
+                        android:layout_centerVertical="true"
+                        android:text="@string/card_image"
+                        android:textColor="@color/black"
+                        android:textSize="17sp" />
+
+                    <ImageView
+                        android:id="@+id/img_card"
+                        android:layout_width="100dp"
+                        android:layout_height="50dp"
+                        android:scaleType="fitXY"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginLeft="20sp"
+                        android:fitsSystemWindows="true"/>
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/rltv_house_img"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    app:layout_constraintTop_toBottomOf="@id/rltv_card_img">
+
+                    <Button
+                        android:id="@+id/house_btn"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/camerabutton"
+                        android:onClick="@{()->formpageviewmodel.saveImageHome()}"
+                        android:textAllCaps="false"
+                        android:gravity="center_vertical"
+                        android:layout_centerVertical="true"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <TextView
+                        android:id="@+id/house_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20dp"
+                        android:text="@string/house_image"
+                        android:textColor="@color/black"
+                        android:textSize="17sp"
+                        android:layout_centerVertical="true"
+                        android:gravity="center_vertical"
+                        android:layout_toRightOf="@+id/house_btn"/>
+
+                    <ImageView
+                        android:id="@+id/img_house"
+                        android:layout_width="100dp"
+                        android:layout_height="50dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginLeft="20sp"
+                        android:scaleType="fitXY"/>
+
+                </RelativeLayout>
+
+                <Button
+                    android:id="@+id/btnSaveDetails"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_weight="100"
+                    android:background="@drawable/backgroundgreendark"
+                    android:onClick="@{()->formpageviewmodel.saveData()}"
+                    android:text="@string/save_details"
+                    android:textColor="@color/white"
+                    android:textSize="17sp"
+                    app:layout_constraintTop_toBottomOf="@id/rltv_house_img" />
+
+                <View
+                    android:layout_width="10dp"
+                    android:layout_height="match_parent"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <RadioGroup
+                android:id="@+id/radioGroup"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="10dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="@+id/linearmobile"
+                app:layout_constraintStart_toStartOf="@+id/linearmobile"
+                app:layout_constraintTop_toBottomOf="@+id/linearmobile">
+
+                <RadioButton
+                    android:id="@+id/radio_awasiye"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="50"
+                    android:checked="@{formpageviewmodel.isCheckedAwasiye}"
+                    android:onClick="@{()->formpageviewmodel.awasiyeButtonClick()}"
+                    android:text="@string/houses"
+                    android:textSize="18sp" />
+
+                <RadioButton
+                    android:id="@+id/radio_com"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="50"
+                    android:checked="@{formpageviewmodel.isChecked}"
+                    android:onClick="@{()->formpageviewmodel.commercialButtonClick()}"
+                    android:text="@string/business"
+                    android:textSize="18sp" />
+            </RadioGroup>
+
+            <Spinner
+                android:id="@+id/spnrHouseType"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/backgroundboundari"
+                android:overlapAnchor="false"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:spinnerMode="dropdown"
+                app:layout_constraintEnd_toEndOf="@+id/radioGroup"
+                app:layout_constraintStart_toStartOf="@+id/radioGroup"
+                app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
+
+            <View
+                android:id="@+id/view1"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_marginTop="20dp"
+                android:background="@color/green"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/linearSave" />
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:background="?attr/colorPrimary"
+                android:gravity="center"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:popupTheme="@style/AppTheme.PopupOverlay">
+
+                <TextView
+                    android:id="@+id/toolbar_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="@string/welcome_to_wevois"
+                    android:textColor="@color/white"
+                    android:textSize="22sp" />
+
+                <TextView
+                    android:id="@+id/BackBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ic_arrow_back_black_24dp"
+                    android:onClick="@{()->formpageviewmodel.onBack()}"
+                    android:textColor="@color/white"
+                    android:textSize="22sp" />
+            </androidx.appcompat.widget.Toolbar>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/light_skyblue"
+                android:orientation="vertical"
+                android:weightSum="100"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/view1">
+
+                <Button
+                    android:id="@+id/btnRevisit"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/backgroundgreendark"
+                    android:onClick="@{()->formpageviewmodel.revisitBtn()}"
+                    android:text="@string/revisit"
+                    android:textColor="@color/white"
+                    android:textSize="17sp"
+                    android:visibility="@{formpageviewmodel.isVisibleBtnRevisit?View.VISIBLE:View.GONE}"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tvRevisitNote" />
+
+
+                <EditText
+                    android:id="@+id/revisitNameForm"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/border"
+                    android:hint="@string/enter_name"
+                    android:paddingLeft="10dp"
+                    android:visibility="@{formpageviewmodel.isVisibleRevisitName?View.VISIBLE:View.GONE}"
+                    app:addTextChangedListener="@{formpageviewmodel.revisitNameTvWatcher}"
+                    app:layout_constraintTop_toBottomOf="@+id/btnRevisit" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="28dp"
+                    android:layout_marginRight="10dp"
+                    android:orientation="horizontal"
+                    android:visibility="@{formpageviewmodel.isVisibleBtnRevisitSave?View.VISIBLE:View.GONE}"
+                    android:weightSum="100"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/spnrHouseTypeCardRevisit">
+
+                    <Button
+                        android:id="@+id/button_image_revisit"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/camerabutton"
+                        android:onClick="@{()->formpageviewmodel.saveRevisitImage()}"
+                        android:textAllCaps="false" />
+
+                    <Button
+                        android:id="@+id/btnSaveReason"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="100"
+                        android:background="@drawable/backgroundgreendark"
+                        android:onClick="@{()->formpageviewmodel.saveRevisitBtn()}"
+                        android:text="@string/revisit"
+                        android:textColor="@color/white"
+                        android:textSize="17sp" />
+
+                    <View
+                        android:layout_width="10dp"
+                        android:layout_height="match_parent" />
+                </LinearLayout>
+
+                <RadioGroup
+                    android:id="@+id/radioGroupCardRevisit"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginRight="10dp"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:visibility="@{formpageviewmodel.isVisibleRadioRevisit?View.VISIBLE:View.GONE}"
+                    app:layout_constraintEnd_toEndOf="@+id/spnrReason"
+                    app:layout_constraintStart_toStartOf="@+id/spnrReason"
+                    app:layout_constraintTop_toBottomOf="@+id/spnrReason">
+
+                    <RadioButton
+                        android:id="@+id/radio_awasiyeCardRevisit"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="50"
+                        android:checked="true"
+                        android:onClick="@{()->formpageviewmodel.awasiyeButtonCardRevisitClick()}"
+                        android:text="@string/houses"
+                        android:textSize="18sp" />
+
+                    <RadioButton
+                        android:id="@+id/radio_comCardRevisit"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="50"
+                        android:onClick="@{()->formpageviewmodel.commercialButtonCardRevisitClick()}"
+                        android:text="@string/business"
+                        android:textSize="18sp" />
+                </RadioGroup>
+
+                <Spinner
+                    android:id="@+id/spnrReason"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/backgroundboundari"
+                    android:drawablePadding="10dp"
+                    android:overlapAnchor="false"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:spinnerMode="dropdown"
+                    android:visibility="@{formpageviewmodel.isVisibleReasonRevisit?View.VISIBLE:View.GONE}"
+                    app:layout_constraintEnd_toEndOf="@+id/etMobile"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="@+id/etMobile"
+                    app:layout_constraintTop_toBottomOf="@+id/revisitNameForm"
+                    tools:ignore="NotSibling" />
+
+                <Spinner
+                    android:id="@+id/spnrHouseTypeCardRevisit"
+                    android:layout_width="match_parent"
+                    android:layout_height="45dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/backgroundboundari"
+                    android:overlapAnchor="false"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:spinnerMode="dropdown"
+                    android:visibility="@{formpageviewmodel.isVisibleCardRevisit?View.VISIBLE:View.GONE}"
+                    app:layout_constraintEnd_toEndOf="@+id/radioGroupCardRevisit"
+                    app:layout_constraintStart_toStartOf="@+id/radioGroupCardRevisit"
+                    app:layout_constraintTop_toBottomOf="@+id/radioGroupCardRevisit" />
+
+                <TextView
+                    android:id="@+id/tvRevisitNote"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="30dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_weight="50"
+                    android:gravity="center|left"
+                    android:text="@string/note_revisit_house"
+                    android:textColor="@color/light_red"
+                    android:visibility="@{formpageviewmodel.isVisibleTvRevisitNote?View.VISIBLE:View.GONE}"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="formpageviewmodel"
+            type="com.wevois.surveyapproval.FormPageViewModel" />
+    </data>
+</layout>

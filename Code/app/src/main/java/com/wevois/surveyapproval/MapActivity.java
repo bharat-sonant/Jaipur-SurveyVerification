@@ -5,7 +5,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
@@ -45,6 +44,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -69,7 +69,6 @@ import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -84,6 +83,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.reader.ble.impl.EpcReply;
+import com.wevois.surveyapproval.repository.Repository;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -149,6 +149,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
     private boolean inventorying = false;
     private boolean btnInventorying = false;
     JSONObject scanDataObject;
+    LinearLayout bottomLnyrLayout;
 
     private Runnable inventoryRunnable = new Runnable() {
         @Override
@@ -157,11 +158,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                 if (status == 0) {
                     for (EpcReply epcReply : list) {
                         Log.e("EPC Reply ", ByteUtils.epcBytes2Hex(epcReply.getEpc()));
-                        inventorying = false;
-//                        onInventoryAction();
-//                        mEPCAdapter.addEpcRecord(ByteUtils.epcBytes2Hex(epcReply.getEpc()), epcReply.getRssi());
-//                        etRFIDNumber.setText(ByteUtils.epcBytes2Hex(epcReply.getEpc()));
-//                        Toast.makeText(MapActivity.this, "" + ByteUtils.epcBytes2Hex(epcReply.getEpc()), Toast.LENGTH_SHORT).show();
+                        inventorying = true;
                         try {
                             String rfid = ByteUtils.epcBytes2Hex(epcReply.getEpc());
                             if (scanDataObject.has(rfid)) {
@@ -169,19 +166,12 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                                 String serialNo = jsonArray.get(0).toString();
                                 Log.e("SerialNo", serialNo);
                                 getHouseLineDetails(serialNo);
-//                                preferences.edit().putString("cardNo", cardNo).apply();
-//                                preferences.edit().putString("cardNoPre", cardNo).apply();
                             }
 
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        /*String str = ByteUtils.epcBytes2Hex(epcReply.getEpc());
-                        if (str.length() >= 24) {
-                            cardScanMethod(scanCard.getText().toString(), scanCard);
-                        }else {
-                            Toast.makeText(MainActivity.this,"Please Card Scan Again",Toast.LENGTH_SHORT).show();
-                        }*/
+
 
                     }
 //                    final int total = mEPCAdapter.getTotal();
@@ -276,6 +266,12 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                         String wardno = dataSnapshot.child("ward").getValue().toString();
                         getHouseDetails(lineno,wardno,SerialNo);
                     }
+                }else {
+                    common.closeDialog(MapActivity.this);
+                    Intent intent = new Intent(MapActivity.this,FormPageActivity.class);
+                    intent.putExtra("from", "map");
+                    startActivity(intent);
+
                 }
             }
 
@@ -300,7 +296,8 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                         String mobile = dataSnapshot.child("mobile").getValue().toString();
                         String type = dataSnapshot.child("cardType").getValue().toString();
                         String ward = dataSnapshot.child("ward").getValue().toString();
-                        Intent intent = new Intent(MapActivity.this,SubFormPageActivity.class);
+                        Intent intent = new Intent(MapActivity.this, HouseDetailActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         intent.putExtra("name",name);
                         intent.putExtra("address",address);
                         intent.putExtra("mobile",mobile);
@@ -332,9 +329,11 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
         isSurveyedTrue = findViewById(R.id.is_surveyed_true_rb);
         isSurveyedFalse = findViewById(R.id.is_surveyed_false_rb);
         dateTimeTv = findViewById(R.id.date_and_time_tv);
+        bottomLnyrLayout = findViewById(R.id.bottomLayout);
         date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
         preferences = getSharedPreferences("LoginDetails", MODE_PRIVATE);
+        new Repository().storageFileDownload(MapActivity.this);
         selectedWard = preferences.getString("assignment", null);
         selectedCity = preferences.getString("storagePath", "");
         userId = preferences.getString("userId", "");
@@ -421,8 +420,8 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
             if (status == 0) {
                 sn = String.format(Locale.getDefault(), "%010d", serialNumber);
                 ActionBar actionBar = getSupportActionBar();
-//                inventorying = true;
-//                onInventoryAction();
+                inventorying = true;
+                onInventoryAction();
                 if (actionBar != null) {
                     actionBar.setTitle(sn);
                 }
@@ -1841,7 +1840,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
     public void onInventoryAction() {
         if (inventorying) {
             mHandler.post(inventoryRunnable);
-            inventorying = false;
+            inventorying = true;
 //            btnRead.setText(getResources().getString(R.string.text_btn_inventory_stop));
 //            updateControls(false);
         } else {

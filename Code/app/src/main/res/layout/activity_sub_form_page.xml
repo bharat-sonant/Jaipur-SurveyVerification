@@ -37,9 +37,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:text="House Detail"
+                    android:text="@string/welcome_to_wevois"
                     android:textColor="@color/white"
-                    android:textSize="18sp" />
+                    android:textSize="22sp" />
 
                 <TextView
                     android:id="@+id/BackBtn"
@@ -85,8 +85,6 @@
                 android:inputType="phone"
                 android:paddingLeft="20dp"
                 android:paddingRight="20dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/etName"
                 app:layout_constraintTop_toBottomOf="@+id/etName" />
 
             <EditText
@@ -102,26 +100,46 @@
                 android:inputType="textCapSentences"
                 android:paddingLeft="20dp"
                 android:paddingRight="20dp"
-                android:visibility="visible"
+                android:visibility="gone"
                 app:layout_constraintStart_toStartOf="@+id/etMobile"
                 app:layout_constraintTop_toBottomOf="@+id/etMobile" />
 
-            <EditText
-                android:id="@+id/etType"
+            <Button
+                android:id="@+id/house_btn_img"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/camerabutton"
+                android:textAllCaps="false"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/etAddress" />
+
+            <TextView
+                android:id="@+id/house_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:text="@string/house_image"
+                android:textColor="@color/black"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@id/house_btn_img"
+                app:layout_constraintStart_toEndOf="@id/house_btn_img"
+                app:layout_constraintTop_toTopOf="@id/house_btn_img" />
+
+
+            <ImageView
+                android:id="@+id/img_house"
                 android:layout_width="match_parent"
-                android:layout_height="45dp"
+                android:layout_height="100dp"
+                android:layout_alignParentRight="false"
                 android:layout_marginLeft="10dp"
+                android:layout_marginEnd="10dp"
                 android:layout_marginTop="20sp"
-                android:layout_marginRight="10dp"
-                android:background="@drawable/border"
-                android:ems="10"
-                android:hint="@string/enter_address"
-                android:inputType="textCapSentences"
-                android:paddingLeft="20dp"
-                android:paddingRight="20dp"
-                android:visibility="visible"
-                app:layout_constraintStart_toStartOf="@+id/etAddress"
-                app:layout_constraintTop_toBottomOf="@+id/etAddress" />
+                android:scaleType="fitXY"
+                app:layout_constraintLeft_toLeftOf="@+id/house_btn_img"
+                app:layout_constraintTop_toBottomOf="@+id/house_btn_img"/>
 
             <Button
                 android:id="@+id/btnSaveDetails"
@@ -131,11 +149,11 @@
                 android:layout_marginTop="30dp"
                 android:layout_marginEnd="10dp"
                 android:layout_weight="100"
-                android:background="@color/colorPrimary"
+                android:background="@drawable/backgroundgreendark"
                 android:text="@string/save_details"
                 android:textColor="@color/white"
                 android:textSize="17sp"
-                app:layout_constraintTop_toBottomOf="@id/etType" />
+                app:layout_constraintTop_toBottomOf="@id/img_house" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

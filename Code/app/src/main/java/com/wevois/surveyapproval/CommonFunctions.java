@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -17,6 +18,7 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.text.Html;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 
@@ -76,6 +78,33 @@ public class CommonFunctions {
 
     public StorageReference getDatabaseStoragePath(Context context) {
         return FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + getDatabaseSp(context).getString("storagePath", " "));
+    }
+
+    public void setProgressBar(String title, Context context, Activity activity) {
+        closeDialog(activity);
+        dialog = new ProgressDialog(context);
+        dialog.setCancelable(false);
+        dialog.setTitle(title);
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        if (!activity.isFinishing()) {
+            dialog.show();
+        }
+    }
+
+    public void showAlertBox(String message, boolean chancel, Context context,Activity activity) {
+        closeDialog(activity);
+        AlertDialog.Builder alertAssignment = new AlertDialog.Builder(context);
+        alertAssignment.setMessage(Html.fromHtml(message));
+        alertAssignment.setCancelable(chancel);
+        alertAssignment.setPositiveButton("OK", (dialog1, which) -> new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            }
+        });
+        AlertDialog alertDAssignment = alertAssignment.create();
+        if (!alertDAssignment.isShowing()) {
+            alertDAssignment.show();
+        }
     }
 
     public void showAlertBox(String message, String pBtn, String nBtn, Context ctx) {

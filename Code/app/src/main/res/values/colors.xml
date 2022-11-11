@@ -12,4 +12,9 @@
     <color name="colorPrimary">#4AAD41</color>
     <color name="colorPrimaryDark">#10AD24</color>
     <color name="colorAccent">#4AAD41</color>
+
+    <color name="green">#10AD24</color>
+    <color name="light_skyblue">#D6F7D9</color>
+    <color name="light_red">#DF5344</color>
+
 </resources>
