@@ -134,8 +134,9 @@ public class FormPageViewModel extends ViewModel {
         this.imgHouse = imgHouse;
         context = activity;
         this.formPageActivity = formPageActivity;
-        preferences = activity.getSharedPreferences("surveyApp", MODE_PRIVATE);
+        preferences = activity.getSharedPreferences("LoginDetails", MODE_PRIVATE);
         currentCardNumber = preferences.getString("cardNo", "");
+        Log.e("cardNo",preferences.getString("cardNo", ""));
         from = froms;
         tv_totalhouse = etTotalHouse;
         this.addMoreRow = addMoreRow;
@@ -619,7 +620,7 @@ public class FormPageViewModel extends ViewModel {
                     i = 2;
                 }
                 if (validateSurveyForm()) {
-                    if (from.equalsIgnoreCase("map")) {
+                    /*if (from.equalsIgnoreCase("map")) {
                         if (i == 1) {
                             saveRfidImageData();
                         } else {
@@ -630,7 +631,10 @@ public class FormPageViewModel extends ViewModel {
                         String mobile = mobileTv.get();
                         String rfID = preferences.getString("rfid", "");
                         saveOfflineData(mobile, rfID, i);
-                    }
+                    }*/
+                    String mobile = mobileTv.get();
+                    String rfID = preferences.getString("rfid", "");
+                    saveOfflineData(mobile, rfID, i);
                 } else {
                     isMoved = true;
                 }
@@ -1191,9 +1195,11 @@ public class FormPageViewModel extends ViewModel {
 
     private void saveOfflineData(String mobile, String rfID, int i) {
         SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String line = preferences.getString("line", "");
-        String ward = preferences.getString("ward", "");
+        String line = preferences.getString("lineno", "");
+        String ward = preferences.getString("wardno", "");
         String cardNo = preferences.getString("cardNo", "");
+        Log.e("ward_line",ward+" "+line+" "+cardNo);
+
         try {
             if (preferences.getString("scanHousesData", "").length() > 0) {
                 try {
@@ -1239,7 +1245,7 @@ public class FormPageViewModel extends ViewModel {
             if (i == 1) {
                 saveSurveyDetails();
             } else {
-                showAlertBox("आपका सर्वे पूरा हुआ, धन्यवाद |", true, "offline", "");
+                showAlertBox("आपका सर्वे पूरा हुआ, धन्यवाद ||", true, "offline", "");
             }
         } catch (Exception e) {
         }
@@ -1257,12 +1263,13 @@ public class FormPageViewModel extends ViewModel {
                         if (dataSnapshot.hasChild("ward")) {
                             ward = dataSnapshot.child("ward").getValue().toString();
                         }
-                        if (line.equalsIgnoreCase(preferences.getString("line", "")) && ward.equalsIgnoreCase(preferences.getString("ward", ""))) {
+                        if (!line.equalsIgnoreCase(preferences.getString("lineno", "")) && ward.equalsIgnoreCase(preferences.getString("wardno", ""))) {
                             saveSurveyData();
                         } else {
                             isMoved = true;
                             removeCardLocalData();
-                            showAlertBox("Error", true, "offline", "");
+                            saveSurveyData();
+//                            showAlertBox("Error", true, "offline", "");
                         }
                     } else {
                         saveSurveyData();
@@ -1343,11 +1350,13 @@ public class FormPageViewModel extends ViewModel {
             housesMap.put("servingCount", tv_totalhouse.getText().toString());
         }
 
-        new Repository().sendHousesData(activity, countCheck, currentCardNumber, identityBitmap, houseImage, myPath, newMobiles, housesMap, subhousesMap, bitmaps, markingKey, jsonObject, dataObject, jsonObjectWard, preferences.getString("ward", ""),
+        Log.e("WardNo","NO"+preferences.getString("wardno", ""));
+        Log.e("LineNo","NO"+preferences.getString("lineno", ""));
+        new Repository().sendHousesData(activity, countCheck, currentCardNumber, identityBitmap, houseImage, myPath, newMobiles, housesMap, subhousesMap, bitmaps, markingKey, jsonObject, dataObject, jsonObjectWard, preferences.getString("assignment", ""),
                 preferences.getString("userId", ""), preferences.getString("line", ""), preferences.getString("rfid", ""), preferences.getString("markingRevisit", "no"), currentDate).observeForever(dataSnapshot -> {
 
             if (dataSnapshot.equalsIgnoreCase("success")) {
-                showAlertBox("आपका सर्वे पूरा हुआ, धन्यवाद |", true, "survey", preferences.getString("cardNo", ""));
+                showAlertBox("आपका सर्वे पूरा हुआ, धन्यवाद |||", true, "survey", preferences.getString("cardNo", ""));
             }
         });
     }

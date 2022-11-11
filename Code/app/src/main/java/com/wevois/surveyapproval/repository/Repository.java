@@ -370,7 +370,7 @@ public class Repository {
 
 
     public void storageFileDownload(Activity activity) {
-        SharedPreferences preferences = activity.getSharedPreferences("surveyApp", Context.MODE_PRIVATE);
+        SharedPreferences preferences = activity.getSharedPreferences("LoginDetails", Context.MODE_PRIVATE);
         Log.e("storageFileDownload",""+CommonFunctions.getInstance().getDatabaseStoragePath(activity));
         FirebaseStorage.getInstance().getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/Defaults/FinalHousesType.json").getMetadata().addOnSuccessListener(storageMetadata -> {
             long fileCreationTime = storageMetadata.getCreationTimeMillis();

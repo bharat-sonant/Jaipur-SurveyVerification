@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -121,6 +122,7 @@ public class LoginActivity extends AppCompatActivity {
                                                     if (Boolean.parseBoolean(String.valueOf(snapshot.child("isActive").getValue()))) {
                                                         preferences.edit().putString("userId", userId).apply();
                                                         preferences.edit().putString("assignment", String.valueOf(snapshot.child("assignedWard").getValue())).apply();
+                                                        Log.e("Assign Ward",String.valueOf(snapshot.child("assignedWard").getValue()));
                                                         Intent intent = new Intent(LoginActivity.this, BleServiceActivity.class);
                                                         common.closeDialog(LoginActivity.this);
                                                         startActivity(intent);

@@ -255,6 +255,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
     }
 
     private void getHouseLineDetails(String SerialNo) {
+//        preferences.edit().putString(SerialNo,"cardNo").apply();
         common.setProgressDialog("Please Wait..", "",this, this);
         rootRef.child("CardWardMapping/"+SerialNo).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -268,6 +269,9 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                     }
                 }else {
                     common.closeDialog(MapActivity.this);
+//                    preferences.edit().putString(SerialNo,"cardNo").apply();
+                    preferences.edit().putString("cardNo", "" + SerialNo).commit();
+                    Log.e("Seriallllll",preferences.getString("cardNo",""));
                     Intent intent = new Intent(MapActivity.this,FormPageActivity.class);
                     intent.putExtra("from", "map");
                     startActivity(intent);
@@ -1057,6 +1061,11 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
         mMap.clear();
         boolToInstantiateMovingMarker = true;
         currentLineTv.setText("" + (currentLineNumber + 1) + " / " + dbColl.size());
+        preferences.edit().putString("lineno", "" + (currentLineNumber + 1)).commit();
+        preferences.edit().putString("wardno",selectedWard).commit();
+        String line = preferences.getString("lineno", "");
+        String ward = preferences.getString("wardno", "");
+        Log.e("ward_line",ward+" "+line);
         drawAllLine();
         mMap.addPolyline(new PolylineOptions().addAll(dbColl.get(currentLineNumber))
                 .endCap(new CustomCap(BitmapDescriptorFactory.fromResource(R.drawable.upper60), 30))
