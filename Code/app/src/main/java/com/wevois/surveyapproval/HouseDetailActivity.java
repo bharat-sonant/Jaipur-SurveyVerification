@@ -83,7 +83,7 @@ public class HouseDetailActivity extends AppCompatActivity {
             public void onClick(View v) {
                 common.setProgressDialog("", "Please Wait", HouseDetailActivity.this, HouseDetailActivity.this);
                 runOnUiThread(() -> {
-                    CommonFunctions.getInstance().getDatabaseForApplication(HouseDetailActivity.this).child("VerifiedHouses/" + ward + "/" + line + "/" + serialNo).updateChildren(subhouses).addOnCompleteListener(task -> {
+                    CommonFunctions.getInstance().getDatabaseForApplication(HouseDetailActivity.this).child("SurveyVerifierData/VerifiedHouses/" + ward + "/" + line + "/" + serialNo).updateChildren(subhouses).addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             common.closeDialog(HouseDetailActivity.this);
                             Log.e("data","save sucess");

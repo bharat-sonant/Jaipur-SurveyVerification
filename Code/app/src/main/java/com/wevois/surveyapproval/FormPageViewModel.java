@@ -1356,7 +1356,10 @@ public class FormPageViewModel extends ViewModel {
                 preferences.getString("userId", ""), preferences.getString("line", ""), preferences.getString("rfid", ""), preferences.getString("markingRevisit", "no"), currentDate).observeForever(dataSnapshot -> {
 
             if (dataSnapshot.equalsIgnoreCase("success")) {
+                common.closeDialog(activity);
                 showAlertBox("आपका सर्वे पूरा हुआ, धन्यवाद |||", true, "survey", preferences.getString("cardNo", ""));
+            }else {
+                common.closeDialog(activity);
             }
         });
     }

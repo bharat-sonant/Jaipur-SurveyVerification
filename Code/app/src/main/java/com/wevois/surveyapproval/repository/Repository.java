@@ -129,7 +129,7 @@ public class Repository {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.getValue() != null) {
-                    CommonFunctions.getInstance().showAlertBox("This number not exists in our system.", "OK", "",activity);
+                    CommonFunctions.getInstance().showAlertBox("This number not exists in our system.", "OK", "", activity);
                 } else {
                     final DatabaseReference deviceDBRef = CommonFunctions.getInstance().getDatabaseForApplication(activity).child("Surveyors");
                     deviceDBRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -371,7 +371,7 @@ public class Repository {
 
     public void storageFileDownload(Activity activity) {
         SharedPreferences preferences = activity.getSharedPreferences("LoginDetails", Context.MODE_PRIVATE);
-        Log.e("storageFileDownload",""+CommonFunctions.getInstance().getDatabaseStoragePath(activity));
+        Log.e("storageFileDownload", "" + CommonFunctions.getInstance().getDatabaseStoragePath(activity));
         FirebaseStorage.getInstance().getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/Defaults/FinalHousesType.json").getMetadata().addOnSuccessListener(storageMetadata -> {
             long fileCreationTime = storageMetadata.getCreationTimeMillis();
             long fileDownloadTime = preferences.getLong("housesTypeDownloadTime", 0);
@@ -740,7 +740,7 @@ public class Repository {
     }
 
     @SuppressLint("StaticFieldLeak")
-    public LiveData<String> sendHousesData(Activity activity, String countCheck, String currentCardNumber, Bitmap identityBitmap, Bitmap houseImage, File myPath, ArrayList<String> newMobiles, HashMap<String, Object> housesMap, HashMap<String,Object> list, ArrayList<Bitmap> entity_img,String markingKey, JSONObject jsonObjects, JSONObject dataObjects, JSONObject jsonObjectWards, String wardNo, String userId, String line, String rfid, String markingRevisit, String currentDate) {
+    public LiveData<String> sendHousesData(Activity activity, String countCheck, String currentCardNumber, Bitmap identityBitmap, Bitmap houseImage, File myPath, ArrayList<String> newMobiles, HashMap<String, Object> housesMap, HashMap<String, Object> list, ArrayList<Bitmap> entity_img, String markingKey, JSONObject jsonObjects, JSONObject dataObjects, JSONObject jsonObjectWards, String wardNo, String userId, String line, String rfid, String markingRevisit, String currentDate) {
         MutableLiveData<String> response = new MutableLiveData<>("");
         cardNumber = currentCardNumber;
         jsonObject = jsonObjects;
@@ -838,7 +838,7 @@ public class Repository {
 
                     @Override
                     protected Bitmap doInBackground(Void... p) {
-                        File root = new File(Environment.getExternalStorageDirectory(), "SurveyCardImage");
+                        File root = new File(Environment.getExternalStorageDirectory(), "SurveyByVerifierCardImage");
                         if (!root.exists()) {
                             root.mkdirs();
                         }
@@ -874,7 +874,7 @@ public class Repository {
                                 @Override
                                 protected Boolean doInBackground(Void... p) {
                                     FirebaseStorage storage = FirebaseStorage.getInstance();
-                                    StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyCardImage");
+                                    StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyByVerifierCardImage");
                                     StorageReference mountainImagesRef = storageRef.child(cardNumber + ".jpg");
                                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                                     result.compress(Bitmap.CompressFormat.JPEG, 80, baos);
@@ -910,7 +910,7 @@ public class Repository {
                     @Override
                     protected Boolean doInBackground(Void... p) {
                         FirebaseStorage storage = FirebaseStorage.getInstance();
-                        StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyCardImage");
+                        StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyByVerifierCardImage");
                         StorageReference mountainImagesRef = storageRef.child(currentCardNumber + ".jpg");
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         identityBitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
@@ -947,12 +947,12 @@ public class Repository {
 
                     @Override
                     protected Bitmap doInBackground(Void... p) {
-                        File root = new File(Environment.getExternalStorageDirectory(), "SurveyHouseImage");
+                        File root = new File(Environment.getExternalStorageDirectory(), "SurveyByVerifierHouseImage");
                         if (!root.exists()) {
                             root.mkdirs();
                         }
                         File myPath = null;
-                        myPath = new File(root, cardNumber+"House" + ".jpg");
+                        myPath = new File(root, cardNumber + "House" + ".jpg");
                         FileInputStream fos = null;
                         Bitmap bitmap = null;
                         try {
@@ -983,8 +983,8 @@ public class Repository {
                                 @Override
                                 protected Boolean doInBackground(Void... p) {
                                     FirebaseStorage storage = FirebaseStorage.getInstance();
-                                    StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyHouseImage");
-                                    StorageReference mountainImagesRef = storageRef.child(cardNumber+"House" + ".jpg");
+                                    StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyByVerifierHouseImage");
+                                    StorageReference mountainImagesRef = storageRef.child(cardNumber + "House" + ".jpg");
                                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                                     result.compress(Bitmap.CompressFormat.JPEG, 80, baos);
                                     byte[] data = baos.toByteArray();
@@ -1019,8 +1019,8 @@ public class Repository {
                     @Override
                     protected Boolean doInBackground(Void... p) {
                         FirebaseStorage storage = FirebaseStorage.getInstance();
-                        StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyHouseImage");
-                        StorageReference mountainImagesRef = storageRef.child(currentCardNumber+"House" + ".jpg");
+                        StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyByVerifierHouseImage");
+                        StorageReference mountainImagesRef = storageRef.child(currentCardNumber + "House" + ".jpg");
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         houseImage.compress(Bitmap.CompressFormat.JPEG, 80, baos);
                         byte[] data = baos.toByteArray();
@@ -1048,7 +1048,7 @@ public class Repository {
 
         activity.runOnUiThread(() -> {
             if (entity_img == null) {
-                Log.e("img","img null");
+                Log.e("img", "img null");
                 new AsyncTask<Void, Void, Bitmap>() {
                     @Override
                     protected void onPreExecute() {
@@ -1057,12 +1057,12 @@ public class Repository {
 
                     @Override
                     protected Bitmap doInBackground(Void... p) {
-                        File root = new File(Environment.getExternalStorageDirectory(), "SurveyHouseImage");
+                        File root = new File(Environment.getExternalStorageDirectory(), "SurveyByVerifierHouseImage");
                         if (!root.exists()) {
                             root.mkdirs();
                         }
                         File myPath = null;
-                        myPath = new File(root, cardNumber+"Entities" + ".jpg");
+                        myPath = new File(root, cardNumber + "Entities" + ".jpg");
                         FileInputStream fos = null;
                         Bitmap bitmap = null;
                         try {
@@ -1093,8 +1093,8 @@ public class Repository {
                                 @Override
                                 protected Boolean doInBackground(Void... p) {
                                     FirebaseStorage storage = FirebaseStorage.getInstance();
-                                    StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyHouseImage");
-                                    StorageReference mountainImagesRef = storageRef.child(cardNumber+"Entities" + ".jpg");
+                                    StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyByVerifierHouseImage");
+                                    StorageReference mountainImagesRef = storageRef.child(cardNumber + "Entities" + ".jpg");
                                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                                     result.compress(Bitmap.CompressFormat.JPEG, 80, baos);
                                     byte[] data = baos.toByteArray();
@@ -1120,9 +1120,9 @@ public class Repository {
                     }
                 }.execute();
             } else {
-                for (int i = 0; i<entity_img.size(); i++) {
+                for (int i = 0; i < entity_img.size(); i++) {
                     int no = i;
-                    int count = i+1;
+                    int count = i + 1;
                     new AsyncTask<Void, Void, Boolean>() {
                         @Override
                         protected void onPreExecute() {
@@ -1132,8 +1132,8 @@ public class Repository {
                         @Override
                         protected Boolean doInBackground(Void... p) {
                             FirebaseStorage storage = FirebaseStorage.getInstance();
-                            StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyHouseImage/"+currentCardNumber+"/Entities");
-                            StorageReference mountainImagesRef = storageRef.child(currentCardNumber + "Entities_" +count+ ".jpg");
+                            StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyByVerifierHouseImage/" + currentCardNumber + "/Entities");
+                            StorageReference mountainImagesRef = storageRef.child(currentCardNumber + "Entities_" + count + ".jpg");
                             ByteArrayOutputStream baos = new ByteArrayOutputStream();
                             Bitmap houseimg = entity_img.get(no);
                             houseimg.compress(Bitmap.CompressFormat.JPEG, 80, baos);
@@ -1165,150 +1165,30 @@ public class Repository {
         });
 
         activity.runOnUiThread(() -> {
-            CommonFunctions.getInstance().getDatabaseForApplication(activity).child("Houses/" + wardNo + "/" + line + "/" + currentCardNumber).updateChildren(housesMap).addOnCompleteListener(task -> {
+            CommonFunctions.getInstance().getDatabaseForApplication(activity).child("SurveyVerifierData/HousesByVerifier/" + wardNo + "/" + line + "/" + currentCardNumber).updateChildren(housesMap).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
-                    removeLocalData("Houses");
-                    response.setValue(checkAllDataSend("Houses"));
+                    removeLocalData("SurveyVerifierData/HousesByVerifier");
+                    response.setValue("success");
                 }
             });
         });
 
-        Log.e("list size","ee "+list.size());
+        Log.e("list size", "ee " + list.size());
         activity.runOnUiThread(() -> {
-            CommonFunctions.getInstance().getDatabaseForApplication(activity).child("Houses/" + wardNo + "/" + line + "/" + currentCardNumber + "/" + "Entities").updateChildren(list).addOnCompleteListener(task -> {
+            CommonFunctions.getInstance().getDatabaseForApplication(activity).child("SurveyVerifierData/HousesByVerifier/" + wardNo + "/" + line + "/" + currentCardNumber + "/" + "Entities").updateChildren(list).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
-                    Log.e("data","save sucess");
-                    removeLocalData("Houses");
-                    response.setValue(checkAllDataSend("Houses"));
+                    Log.e("data", "save sucess");
+                    removeLocalData("SurveyVerifierData/HousesByVerifier");
+                    response.setValue("success");
                 }
             });
         });
 
-        activity.runOnUiThread(() -> {
-            for (int i = 0; i < newMobiles.size(); i++) {
-                DatabaseReference houseWardMapPath = CommonFunctions.getInstance().getDatabaseForApplication(activity).child("HouseWardMapping/" + newMobiles.get(i));
-                houseWardMapPath.child("line").setValue(line);
-                houseWardMapPath.child("ward").setValue(wardNo);
-            }
-            HashMap<String, Object> houseWardMapping = new HashMap<>();
-            houseWardMapping.put("line", line);
-            houseWardMapping.put("ward", wardNo);
-            CommonFunctions.getInstance().getDatabaseForApplication(activity).child("CardWardMapping/" + currentCardNumber).updateChildren(houseWardMapping).addOnCompleteListener(task1 -> {
-                if (task1.isSuccessful()) {
-                    removeLocalData("CardWardMapping");
-                    response.setValue(checkAllDataSend("cardWard"));
-                }
-            });
-        });
-        activity.runOnUiThread(() -> {
-            CommonFunctions.getInstance().getDatabaseForApplication(activity).child("CardScanData/" + rfid).child("cardInstalled").setValue("yes").addOnCompleteListener(task11 -> {
-                if (task11.isSuccessful()) {
-                    removeLocalData("CardScanData");
-                    response.setValue(checkAllDataSend("cardScan"));
-                }
-            });
-        });
-        activity.runOnUiThread(() -> {
-            CommonFunctions.getInstance().getDatabaseForApplication(activity).child("EntityMarkingData/MarkedHouses/" + wardNo + "/" + line + "/surveyedCount").addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    int count = 1;
-                    if (dataSnapshot.getValue() != null) {
-                        count = Integer.parseInt(dataSnapshot.getValue().toString()) + 1;
-                    }
-                    if (countCheck.equals("2")) {
-                        CommonFunctions.getInstance().getDatabaseForApplication(activity).child("EntityMarkingData/MarkedHouses/" + wardNo + "/" + line + "/surveyedCount").setValue("" + count);
-                    }
-                    CommonFunctions.getInstance().getDatabaseForApplication(activity).child("EntityMarkingData/MarkedHouses/" + wardNo + "/" + line + "/" + markingKey + "/cardNumber").setValue(currentCardNumber).addOnCompleteListener(task111 -> {
-                        if (task111.isSuccessful()) {
-                            if (!markingRevisit.equalsIgnoreCase("no")) {
-                                CommonFunctions.getInstance().getDatabaseForApplication(activity).child("EntitySurveyData/RevisitRequest/" + wardNo + "/" + line + "/" + markingRevisit).addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(DataSnapshot dataSnapshot1) {
-                                        if (dataSnapshot1.getValue() != null) {
-                                            CommonFunctions.getInstance().getDatabaseForApplication(activity).child("EntitySurveyData/RevisitHistory/" + wardNo + "/" + line + "/lineRevisitCount").addListenerForSingleValueEvent(new ValueEventListener() {
-                                                @Override
-                                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                                    int revistCount = 1;
-                                                    if (dataSnapshot.getValue() != null) {
-                                                        revistCount = Integer.parseInt(dataSnapshot.getValue().toString()) + 1;
-                                                    }
-                                                    CommonFunctions.getInstance().getDatabaseForApplication(activity).child("EntitySurveyData/RevisitHistory/" + wardNo + "/" + line + "/" + markingRevisit).setValue(dataSnapshot1.getValue());
-                                                    CommonFunctions.getInstance().getDatabaseForApplication(activity).child("EntitySurveyData/RevisitHistory/" + wardNo + "/" + line + "/lineRevisitCount").setValue(revistCount);
-                                                    CommonFunctions.getInstance().getDatabaseForApplication(activity).child("EntitySurveyData/RevisitRequest/" + wardNo + "/" + line + "/" + markingRevisit).removeValue();
-                                                }
-
-                                                @Override
-                                                public void onCancelled(DatabaseError databaseError) {
-
-                                                }
-                                            });
-                                            CommonFunctions.getInstance().getDatabaseForApplication(activity).child("EntitySurveyData/RevisitHistory/" + wardNo + "/totalRevisitCount").addListenerForSingleValueEvent(new ValueEventListener() {
-                                                @Override
-                                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                                    int totalCount = 1;
-                                                    if (dataSnapshot.getValue() != null) {
-                                                        totalCount = Integer.parseInt(dataSnapshot.getValue().toString()) + 1;
-                                                    }
-                                                    CommonFunctions.getInstance().getDatabaseForApplication(activity).child("EntitySurveyData/RevisitHistory/" + wardNo + "/totalRevisitCount").setValue(totalCount);
-                                                }
-
-                                                @Override
-                                                public void onCancelled(DatabaseError databaseError) {
-
-                                                }
-                                            });
-                                        }
-                                        removeLocalData("EntityMarking");
-                                        response.setValue(checkAllDataSend("entityMarking"));
-                                    }
-
-                                    @Override
-                                    public void onCancelled(DatabaseError databaseError) {
-
-                                    }
-                                });
-                            } else {
-                                removeLocalData("EntityMarking");
-                                response.setValue(checkAllDataSend("entityMarking"));
-                            }
-                        }
-                    });
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-        });
-        activity.runOnUiThread(() -> {
-            CommonFunctions.getInstance().getDatabaseForApplication(activity).child("EntitySurveyData/SurveyStartDate/" + wardNo + "/" + userId).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.getValue() == null) {
-                        CommonFunctions.getInstance().getDatabaseForApplication(activity).child("EntitySurveyData/SurveyStartDate/" + wardNo + "/" + userId).setValue(currentDate).addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
-                                removeLocalData("SurveyStartDate");
-                                response.setValue(checkAllDataSend("startDate"));
-                            }
-                        });
-                    } else {
-                        removeLocalData("SurveyStartDate");
-                        response.setValue(checkAllDataSend("startDate"));
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                }
-            });
-        });
         return response;
     }
 
     @SuppressLint("StaticFieldLeak")
-    public LiveData<String> saveRevisitData(Activity activity, HashMap<String, Object> hashMapData, Bitmap identityBitmap,Bitmap houseImage , String cardKey) {
+    public LiveData<String> saveRevisitData(Activity activity, HashMap<String, Object> hashMapData, Bitmap identityBitmap, Bitmap houseImage, String cardKey) {
         MutableLiveData<String> response = new MutableLiveData<>("");
         SharedPreferences preferences = activity.getSharedPreferences("surveyApp", MODE_PRIVATE);
         new AsyncTask<Void, Void, Boolean>() {

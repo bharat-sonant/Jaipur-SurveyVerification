@@ -222,7 +222,8 @@
                 android:background="@drawable/view_border"
                 android:gravity="center|left"
                 android:orientation="vertical"
-                android:padding="4dp">
+                android:padding="4dp"
+                android:visibility="gone">
 
                 <LinearLayout
                     android:id="@+id/is_surveyed_rg"
@@ -292,18 +293,19 @@
                 android:layout_marginBottom="39dp"
                 android:padding="20dp"
                 android:orientation="horizontal"
-                android:visibility="gone">
+                android:visibility="visible">
 
                 <Button
                     android:id="@+id/dataScan"
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
-                    android:text="Start"
+                    android:text="@string/market"
                     android:textStyle="normal"
                     android:textSize="14sp"
                     android:textColor="@color/white"
                     android:background="@drawable/rounded_button"
                     android:elevation="2dp" />
+
             </LinearLayout>
 
         </fragment>

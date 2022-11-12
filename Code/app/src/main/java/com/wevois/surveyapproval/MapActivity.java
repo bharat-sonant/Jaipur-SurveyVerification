@@ -357,8 +357,11 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
         findViewById(R.id.dataScan).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                inventorying = true;
-                onInventoryAction();
+                if (bottomLnyrLayout.getVisibility() == View.VISIBLE) {
+                    bottomLnyrLayout.setVisibility(View.GONE);
+                }else {
+                    bottomLnyrLayout.setVisibility(View.VISIBLE);
+                }
             }
         });
         getFileDownload();
@@ -916,7 +919,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
         if (photo != null) {
             common.closeDialog(MapActivity.this);
             common.setProgressDialog("", "Saving data", MapActivity.this, MapActivity.this);
-            rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).child("lastMarkerKey")
+            rootRef.child("SurveyVerifierData/SurveyMarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).child("lastMarkerKey")
                     .runTransaction(new Transaction.Handler() {
                         @NonNull
                         @Override
@@ -938,13 +941,13 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                                     HashMap<String, Object> hM = new HashMap<>();
                                     hM.put("latLng", lastKnownLatLngForWalkingMan.latitude + "," + lastKnownLatLngForWalkingMan.longitude);
                                     hM.put("userId", userId);
-                                    hM.put("alreadyInstalled", checkWhichRBisChecked());
+//                                    hM.put("alreadyInstalled", checkWhichRBisChecked());
                                     hM.put("image", MARKS_COUNT + ".jpg");
                                     hM.put("date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
                                     hM.put("houseType", houseDataHashMap.get(houseTypeSpinner.getSelectedItem()));
 
-                                    rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT).setValue(hM);
-                                    rootRef.child("EntityMarkingData/LastScanTime/Surveyor").child(userId).setValue(new SimpleDateFormat("dd MMM HH:mm:ss").format(new Date()));
+                                    rootRef.child("SurveyVerifierData/SurveyMarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT).setValue(hM);
+                                    /*rootRef.child("EntityMarkingData/LastScanTime/Surveyor").child(userId).setValue(new SimpleDateFormat("dd MMM HH:mm:ss").format(new Date()));
                                     rootRef.child("EntityMarkingData/LastScanTime/Ward").child(selectedWard).setValue(new SimpleDateFormat("dd MMM HH:mm:ss").format(new Date()));
                                     common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/" + userId + "/marked"));
                                     common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).child("marksCount"));
@@ -957,17 +960,18 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                                     if (checkWhichRBisChecked()) {
                                         common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/WardSurveyData/WardWise/" + selectedWard + "/alreadyInstalled"));
                                         common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).child("alreadyInstalledCount"));
-                                    }
+                                    }*/
                                     houseTypeSpinner.setSelection(0);
-                                    setBothRBUnchecked();
-                                    dateTimeTv.setText(new SimpleDateFormat("dd MMM HH:mm:ss").format(new Date()));
+                                    bottomLnyrLayout.setVisibility(View.GONE);
+//                                    setBothRBUnchecked();
+//                                    dateTimeTv.setText(new SimpleDateFormat("dd MMM HH:mm:ss").format(new Date()));
 
 
                                     ByteArrayOutputStream toUpload = new ByteArrayOutputStream();
                                     Bitmap.createScaledBitmap(photo, 400, 600, false)
                                             .compress(Bitmap.CompressFormat.JPEG, 80, toUpload);
-                                    FirebaseStorage.getInstance().getReferenceFromUrl("gs://dtdnavigator.appspot.com/" + selectedCity)
-                                            .child("/MarkingSurveyImages/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT + ".jpg")
+                                    FirebaseStorage.getInstance().getReferenceFromUrl(""+common.getDatabaseStoragePath(MapActivity.this))
+                                            .child("/MarkingSurveyVerifierImages/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT + ".jpg")
                                             .putBytes(toUpload.toByteArray())
                                             .addOnSuccessListener((UploadTask.TaskSnapshot taskSnapshot) -> {
                                                 if (taskSnapshot.getTask().isSuccessful()) {
@@ -1317,14 +1321,16 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
     public void onSaveClick(View view) {
         if (isPass) {
             isPass = false;
-            if (isSurveyedTrue.isChecked() || isSurveyedFalse.isChecked()) {
+            checkGpsForEntity();
+
+            /*if (isSurveyedTrue.isChecked() || isSurveyedFalse.isChecked()) {
                 checkGpsForEntity();
             } else {
                 isPass = true;
                 setBothRBUnchecked();
                 houseTypeSpinner.setSelection(0);
                 common.showAlertBox("Please Select yes or no option", "ok", "", MapActivity.this);
-            }
+            }*/
         }
     }
 
