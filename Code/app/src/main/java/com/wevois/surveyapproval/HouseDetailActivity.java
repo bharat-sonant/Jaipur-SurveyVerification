@@ -2,10 +2,15 @@ package com.wevois.surveyapproval;
 
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,16 +19,26 @@ import androidx.databinding.DataBindingUtil;
 
 import com.wevois.surveyapproval.databinding.HouseDetailActivityBinding;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 public class HouseDetailActivity extends AppCompatActivity {
 
 //    ActivitySubFormPageBinding binding;
     HouseDetailActivityBinding binding;
     String ward,line,serialNo;
-    String type, name, mobile,address;
+    String type, name, userid, mobile, address,htype;
     CommonFunctions common;
     SharedPreferences preferences;
+    List<String> houseTypeList = new ArrayList<>();
+    JSONArray jsonArrayHouseType = new JSONArray();
     AlertDialog saveAlertBox;
 
     @Override
@@ -35,11 +50,22 @@ public class HouseDetailActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         binding.setLifecycleOwner(this);
+        common = new CommonFunctions();
+        preferences = getSharedPreferences("LoginDetails", MODE_PRIVATE);
 
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
+            if (bundle.containsKey("userid")) {
+                userid = bundle.getString("userid");
+            }
+            if (bundle.containsKey("mobile")) {
+                mobile = bundle.getString("mobile");
+            }
             if (bundle.containsKey("address")) {
                 address = bundle.getString("address");
+            }
+            if (bundle.containsKey("userid")) {
+                userid = bundle.getString("userid");
             }
             if (bundle.containsKey("type")) {
                 type = bundle.getString("type");
@@ -48,9 +74,7 @@ public class HouseDetailActivity extends AppCompatActivity {
             if (bundle.containsKey("name")) {
                 name = bundle.getString("name");
             }
-            if (bundle.containsKey("mobile")) {
-                mobile = bundle.getString("mobile");
-            }
+
             if (bundle.containsKey("ward")) {
                 ward = bundle.getString("ward");
             }
@@ -60,11 +84,17 @@ public class HouseDetailActivity extends AppCompatActivity {
             if (bundle.containsKey("serail")) {
                 serialNo = bundle.getString("serail");
             }
+            if (bundle.containsKey("htype")){
+                htype = bundle.getString("htype");
+            }
         }
 
 
-        common = new CommonFunctions();
-        preferences = getSharedPreferences("surveyApp", MODE_PRIVATE);
+        if (Integer.parseInt(htype) != 1 && Integer.parseInt(htype) != 19) {
+            commercialBtnClick();
+        }
+        awasiyeBtnClick();
+
         binding.BackBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,9 +105,10 @@ public class HouseDetailActivity extends AppCompatActivity {
 
         HashMap<String, Object> subhouses = new HashMap<>();
         subhouses.put("name", name);
-        subhouses.put("mobile", mobile);
-        subhouses.put("address", address);
-        subhouses.put("house_type", type);
+        subhouses.put("userId", userid);
+        subhouses.put("date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
+        subhouses.put("EntityKey", type);
+
         binding.btnSaveDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -100,10 +131,120 @@ public class HouseDetailActivity extends AppCompatActivity {
 
         binding.tvName.setText(name);
         binding.tvAddress.setText(address);
-        binding.tvHouse.setText(type);
+//        binding.tvHouse.setText(type);
         binding.tvPhone.setText(mobile);
+//        binding.houseTypeSpinner.setSelection(0);
+//        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+//        binding.houseTypeSpinner.setAdapter(spinnerArrayAdapter);
+        binding.houseTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                if (binding.houseTypeSpinner.getSelectedItemId() != 0) {
+//                    onSaveClick(view);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+        binding.radioCom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                commercialBtnClick();
+            }
+        });
+
+        binding.radioAwasiye.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                awasiyeBtnClick();
+            }
+        });
     }
 
+    public void awasiyeBtnClick() {
+//        isChecked.set(false);
+//        isCheckedAwasiye.set(true);
+        binding.radioAwasiye.setChecked(true);
+        binding.radioCom.setChecked(false);
+        getHouseTypes(false);
+    }
+
+    public void commercialBtnClick() {
+//        isChecked.set(true);
+//        isCheckedAwasiye.set(false);
+        binding.radioCom.setChecked(true);
+        binding.radioAwasiye.setChecked(false);
+        getHouseTypes(true);
+    }
+
+    private void getHouseTypes(Boolean isCommercial) {
+        houseTypeList.clear();
+        houseTypeList.add("Select Entity type");
+        JSONObject jsonObject, commercialJsonObject, residentialJsonObject;
+        jsonArrayHouseType = new JSONArray();
+        try {
+            jsonObject = new JSONObject(preferences.getString("housesTypeList", ""));
+            commercialJsonObject = new JSONObject(preferences.getString("commercialHousesTypeList", ""));
+            residentialJsonObject = new JSONObject(preferences.getString("residentialHousesTypeList", ""));
+
+            for (int i = 1; i <= jsonObject.length(); i++) {
+                if (isCommercial) {
+                    try {
+                        houseTypeList.add(commercialJsonObject.getString(String.valueOf(i)));
+                        jsonArrayHouseType.put(i);
+                    } catch (JSONException e) {
+                    }
+                } else {
+                    try {
+                        houseTypeList.add(residentialJsonObject.getString(String.valueOf(i)));
+                        jsonArrayHouseType.put(i);
+                    } catch (JSONException e) {
+                    }
+                }
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        bindHouseTypesToSpinner();
+    }
+
+
+    private void bindHouseTypesToSpinner() {
+        final ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, houseTypeList) {
+            @Override
+            public boolean isEnabled(int position) {
+                return !(position == 0);
+            }
+
+            @Override
+            public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                View view = super.getDropDownView(position, convertView, parent);
+                TextView tv = (TextView) view;
+                tv.setTextColor(position == 0 ? Color.GRAY : Color.BLACK);
+                return view;
+            }
+        };
+        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.houseTypeSpinner.setAdapter(spinnerArrayAdapter);
+
+        try {
+
+            for (int i = 0; i < jsonArrayHouseType.length(); i++) {
+                Log.e("houseeeeee", jsonArrayHouseType.get(i).toString() + " " + htype);
+                if (jsonArrayHouseType.get(i).toString().equals(htype)) {
+                    Log.e("houseeeeee", jsonArrayHouseType.get(i).toString() + " " + htype);
+                    binding.houseTypeSpinner.setSelection(i + 1);
+                }
+            }
+        }catch (Exception e){
+
+        }
+    }
 
     public void showAlertBox(String message, boolean surveyCompleted, String from) {
         common.closeDialog(HouseDetailActivity.this);

@@ -70,7 +70,7 @@ public class FormPageActivity extends AppCompatActivity {
         binding.setFormpageviewmodel(viewModel);
         binding.setLifecycleOwner(this);
 
-        preferences = getSharedPreferences("surveyApp", MODE_PRIVATE);
+        preferences = getSharedPreferences("LoginDetails", MODE_PRIVATE);
         currentCardNumber = preferences.getString("cardNo", "");
 
         binding.rcyParisarData.setLayoutManager(new LinearLayoutManager(FormPageActivity.this, LinearLayoutManager.VERTICAL, false));

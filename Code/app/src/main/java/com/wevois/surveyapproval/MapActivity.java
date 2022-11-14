@@ -299,15 +299,18 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                         String address = dataSnapshot.child("address").getValue().toString();
                         String mobile = dataSnapshot.child("mobile").getValue().toString();
                         String type = dataSnapshot.child("cardType").getValue().toString();
+                        String htype = dataSnapshot.child("houseType").getValue().toString();
                         String ward = dataSnapshot.child("ward").getValue().toString();
                         Intent intent = new Intent(MapActivity.this, HouseDetailActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         intent.putExtra("name",name);
                         intent.putExtra("address",address);
                         intent.putExtra("mobile",mobile);
+                        intent.putExtra("userid",userId);
                         intent.putExtra("type",type);
-                        intent.putExtra("ward",ward);
-                        intent.putExtra("line",line);
+                        intent.putExtra("htype",htype);
+                        intent.putExtra("ward",preferences.getString("wardno",""));
+                        intent.putExtra("line",preferences.getString("lineno",""));
                         intent.putExtra("serail",SerialNo);
                         startActivity(intent);
 
