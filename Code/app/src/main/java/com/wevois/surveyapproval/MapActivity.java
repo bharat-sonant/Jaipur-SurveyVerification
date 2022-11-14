@@ -946,7 +946,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                                     hM.put("date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
                                     hM.put("houseType", houseDataHashMap.get(houseTypeSpinner.getSelectedItem()));
 
-                                    rootRef.child("SurveyVerifierData/SurveyMarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT).setValue(hM);
+                                    rootRef.child("SurveyVerifierData/MarkedHousesByVerifier/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT).setValue(hM);
                                     /*rootRef.child("EntityMarkingData/LastScanTime/Surveyor").child(userId).setValue(new SimpleDateFormat("dd MMM HH:mm:ss").format(new Date()));
                                     rootRef.child("EntityMarkingData/LastScanTime/Ward").child(selectedWard).setValue(new SimpleDateFormat("dd MMM HH:mm:ss").format(new Date()));
                                     common.increaseCountByOne(rootRef.child("EntityMarkingData/MarkingSurveyData/Employee/DateWise/" + date + "/" + userId + "/marked"));
@@ -971,7 +971,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                                     Bitmap.createScaledBitmap(photo, 400, 600, false)
                                             .compress(Bitmap.CompressFormat.JPEG, 80, toUpload);
                                     FirebaseStorage.getInstance().getReferenceFromUrl(""+common.getDatabaseStoragePath(MapActivity.this))
-                                            .child("/MarkingSurveyVerifierImages/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT + ".jpg")
+                                            .child("MarkedHousesByVerifierImages/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT + ".jpg")
                                             .putBytes(toUpload.toByteArray())
                                             .addOnSuccessListener((UploadTask.TaskSnapshot taskSnapshot) -> {
                                                 if (taskSnapshot.getTask().isSuccessful()) {
