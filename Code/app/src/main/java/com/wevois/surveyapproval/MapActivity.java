@@ -922,7 +922,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
         if (photo != null) {
             common.closeDialog(MapActivity.this);
             common.setProgressDialog("", "Saving data", MapActivity.this, MapActivity.this);
-            rootRef.child("SurveyVerifierData/SurveyMarkedHouses/" + selectedWard + "/" + (currentLineNumber + 1)).child("lastMarkerKey")
+            rootRef.child("SurveyVerifierData/MarkedHousesByVerifier/" + selectedWard + "/" + (currentLineNumber + 1)).child("lastMarkerKey")
                     .runTransaction(new Transaction.Handler() {
                         @NonNull
                         @Override
@@ -943,7 +943,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                                     int MARKS_COUNT = Integer.parseInt(String.valueOf(currentData.getValue()));
                                     HashMap<String, Object> hM = new HashMap<>();
                                     hM.put("latLng", lastKnownLatLngForWalkingMan.latitude + "," + lastKnownLatLngForWalkingMan.longitude);
-                                    hM.put("userId", userId);
+                                    hM.put("VerifierId", userId);
 //                                    hM.put("alreadyInstalled", checkWhichRBisChecked());
                                     hM.put("image", MARKS_COUNT + ".jpg");
                                     hM.put("date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
@@ -974,7 +974,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                                     Bitmap.createScaledBitmap(photo, 400, 600, false)
                                             .compress(Bitmap.CompressFormat.JPEG, 80, toUpload);
                                     FirebaseStorage.getInstance().getReferenceFromUrl(""+common.getDatabaseStoragePath(MapActivity.this))
-                                            .child("MarkedHousesByVerifierImages/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT + ".jpg")
+                                            .child("SurveyVerifierData/MarkedHousesByVerifierImages/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT + ".jpg")
                                             .putBytes(toUpload.toByteArray())
                                             .addOnSuccessListener((UploadTask.TaskSnapshot taskSnapshot) -> {
                                                 if (taskSnapshot.getTask().isSuccessful()) {
