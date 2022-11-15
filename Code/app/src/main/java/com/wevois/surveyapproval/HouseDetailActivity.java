@@ -91,10 +91,10 @@ public class HouseDetailActivity extends AppCompatActivity {
         }
 
 
-        if(type.equals("आवासीय")) {
-            awasiyeBtnClick();
-        }else {
+        if (Integer.parseInt(htype) != 1 && Integer.parseInt(htype) != 19) {
             commercialBtnClick();
+        }else {
+            awasiyeBtnClick();
         }
 
         binding.BackBtn.setOnClickListener(new View.OnClickListener() {
@@ -153,11 +153,10 @@ public class HouseDetailActivity extends AppCompatActivity {
                 if (binding.houseTypeSpinner.getSelectedItemId() != 0) {
 //                    onSaveClick(view);
                     try {
-                        htype = jsonArrayHouseType.get(binding.houseTypeSpinner.getSelectedItemPosition()-1).toString();
+                        htype = jsonArrayHouseType.get(binding.houseTypeSpinner.getSelectedItemPosition() - 1).toString();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-//                    htype = String.valueOf(binding.houseTypeSpinner.getSelectedItemPosition()+1);
                     Log.e("Select house type",htype);
                 }
             }
