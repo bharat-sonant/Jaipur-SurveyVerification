@@ -747,7 +747,7 @@ public class Repository {
         dataObject = dataObjects;
         jsonObjectWard = jsonObjectWards;
         activityData = activity;
-        preferences = activity.getSharedPreferences("surveyApp", MODE_PRIVATE);
+        preferences = activity.getSharedPreferences("LoginDetails", MODE_PRIVATE);
         if (countCheck.equals("2")) {
             activity.runOnUiThread(() -> {
                 CommonFunctions.getInstance().getDatabaseForApplication(activity).child("EntitySurveyData/DailyHouseCount/" + wardNo + "/" + userId + "/" + currentDate).runTransaction(new Transaction.Handler() {
@@ -838,7 +838,7 @@ public class Repository {
 
                     @Override
                     protected Bitmap doInBackground(Void... p) {
-                        File root = new File(Environment.getExternalStorageDirectory(), "SurveyByVerifierCardImage");
+                        File root = new File(Environment.getExternalStorageDirectory(), "SurveyVerifierData/HousesByVerifierCardImage");
                         if (!root.exists()) {
                             root.mkdirs();
                         }
@@ -874,7 +874,7 @@ public class Repository {
                                 @Override
                                 protected Boolean doInBackground(Void... p) {
                                     FirebaseStorage storage = FirebaseStorage.getInstance();
-                                    StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyByVerifierCardImage");
+                                    StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyVerifierData/HousesByVerifierCardImage");
                                     StorageReference mountainImagesRef = storageRef.child(cardNumber + ".jpg");
                                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                                     result.compress(Bitmap.CompressFormat.JPEG, 80, baos);
@@ -910,7 +910,7 @@ public class Repository {
                     @Override
                     protected Boolean doInBackground(Void... p) {
                         FirebaseStorage storage = FirebaseStorage.getInstance();
-                        StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyByVerifierCardImage");
+                        StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyVerifierData/HousesByVerifierCardImage");
                         StorageReference mountainImagesRef = storageRef.child(currentCardNumber + ".jpg");
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         identityBitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
@@ -947,7 +947,7 @@ public class Repository {
 
                     @Override
                     protected Bitmap doInBackground(Void... p) {
-                        File root = new File(Environment.getExternalStorageDirectory(), "SurveyByVerifierHouseImage");
+                        File root = new File(Environment.getExternalStorageDirectory(), "SurveyVerifierData/HousesByVerifierHouseImage");
                         if (!root.exists()) {
                             root.mkdirs();
                         }
@@ -983,7 +983,7 @@ public class Repository {
                                 @Override
                                 protected Boolean doInBackground(Void... p) {
                                     FirebaseStorage storage = FirebaseStorage.getInstance();
-                                    StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyByVerifierHouseImage");
+                                    StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyVerifierData/HousesByVerifierHouseImage");
                                     StorageReference mountainImagesRef = storageRef.child(cardNumber + "House" + ".jpg");
                                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                                     result.compress(Bitmap.CompressFormat.JPEG, 80, baos);
@@ -1019,7 +1019,7 @@ public class Repository {
                     @Override
                     protected Boolean doInBackground(Void... p) {
                         FirebaseStorage storage = FirebaseStorage.getInstance();
-                        StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyByVerifierHouseImage");
+                        StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyVerifierData/HousesByVerifierHouseImage");
                         StorageReference mountainImagesRef = storageRef.child(currentCardNumber + "House" + ".jpg");
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         houseImage.compress(Bitmap.CompressFormat.JPEG, 80, baos);
@@ -1057,7 +1057,7 @@ public class Repository {
 
                     @Override
                     protected Bitmap doInBackground(Void... p) {
-                        File root = new File(Environment.getExternalStorageDirectory(), "SurveyByVerifierHouseImage");
+                        File root = new File(Environment.getExternalStorageDirectory(), "SurveyVerifierData/HousesByVerifierHouseImage");
                         if (!root.exists()) {
                             root.mkdirs();
                         }
@@ -1093,7 +1093,7 @@ public class Repository {
                                 @Override
                                 protected Boolean doInBackground(Void... p) {
                                     FirebaseStorage storage = FirebaseStorage.getInstance();
-                                    StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyByVerifierHouseImage");
+                                    StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyVerifierData/HousesByVerifierHouseImage");
                                     StorageReference mountainImagesRef = storageRef.child(cardNumber + "Entities" + ".jpg");
                                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                                     result.compress(Bitmap.CompressFormat.JPEG, 80, baos);
@@ -1132,7 +1132,7 @@ public class Repository {
                         @Override
                         protected Boolean doInBackground(Void... p) {
                             FirebaseStorage storage = FirebaseStorage.getInstance();
-                            StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/SurveyByVerifierHouseImage/" + currentCardNumber + "/Entities");
+                            StorageReference storageRef = storage.getReferenceFromUrl("" + CommonFunctions.getInstance().getDatabaseStoragePath(activity) + "/HousesByVerifierHouseImage/" + currentCardNumber + "/Entities");
                             StorageReference mountainImagesRef = storageRef.child(currentCardNumber + "Entities_" + count + ".jpg");
                             ByteArrayOutputStream baos = new ByteArrayOutputStream();
                             Bitmap houseimg = entity_img.get(no);

@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.databinding.DataBindingUtil;
 
+
 import com.wevois.surveyapproval.databinding.HouseDetailActivityBinding;
 
 import org.json.JSONArray;
@@ -92,8 +93,9 @@ public class HouseDetailActivity extends AppCompatActivity {
 
         if (Integer.parseInt(htype) != 1 && Integer.parseInt(htype) != 19) {
             commercialBtnClick();
+        }else {
+            awasiyeBtnClick();
         }
-        awasiyeBtnClick();
 
         binding.BackBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,18 +105,18 @@ public class HouseDetailActivity extends AppCompatActivity {
         });
 
 
-        HashMap<String, Object> subhouses = new HashMap<>();
-        subhouses.put("name", name);
-        subhouses.put("userId", userid);
-        subhouses.put("date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
-        subhouses.put("EntityKey", type);
-
         binding.btnSaveDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 common.setProgressDialog("", "Please Wait", HouseDetailActivity.this, HouseDetailActivity.this);
+                HashMap<String, Object> subhouses = new HashMap<>();
+                subhouses.put("name", name);
+                subhouses.put("VerifierId", userid);
+                subhouses.put("date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
+                subhouses.put("EntityKey", htype);
+
                 runOnUiThread(() -> {
-                    CommonFunctions.getInstance().getDatabaseForApplication(HouseDetailActivity.this).child("SurveyVerifierData/VerifiedHouses/" + ward + "/" + line + "/" + serialNo).updateChildren(subhouses).addOnCompleteListener(task -> {
+                    CommonFunctions.getInstance().getDatabaseForApplication(HouseDetailActivity.this).child("SurveyVerifierData/VerifiedHouses/" + preferences.getString("wardno","") + "/" + preferences.getString("lineno","") + "/" + serialNo).updateChildren(subhouses).addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             common.closeDialog(HouseDetailActivity.this);
                             Log.e("data","save sucess");
@@ -124,6 +126,15 @@ public class HouseDetailActivity extends AppCompatActivity {
 //                            response.setValue(checkAllDataSend("Houses"));
                         }
                     });
+
+                    if (binding.radioAwasiye.isChecked()) {
+                        type = "आवासीय";
+                    } else {
+                        type = "व्यावसायिक";
+                    }
+
+                    CommonFunctions.getInstance().getDatabaseForApplication(HouseDetailActivity.this).child("Houses/"+ ward + "/" + line + "/" + serialNo +"/houseType").setValue(htype);
+                    CommonFunctions.getInstance().getDatabaseForApplication(HouseDetailActivity.this).child("Houses/"+ ward + "/" + line + "/" + serialNo +"/cardType").setValue(type);
                 });
 
             }
@@ -141,6 +152,8 @@ public class HouseDetailActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 if (binding.houseTypeSpinner.getSelectedItemId() != 0) {
 //                    onSaveClick(view);
+                    htype = String.valueOf(binding.houseTypeSpinner.getSelectedItemPosition()+1);
+                    Log.e("Select house type",htype);
                 }
             }
 
@@ -176,6 +189,7 @@ public class HouseDetailActivity extends AppCompatActivity {
     public void commercialBtnClick() {
 //        isChecked.set(true);
 //        isCheckedAwasiye.set(false);
+        Log.e("commercialBtnClick","commercialBtnClick"+"");
         binding.radioCom.setChecked(true);
         binding.radioAwasiye.setChecked(false);
         getHouseTypes(true);

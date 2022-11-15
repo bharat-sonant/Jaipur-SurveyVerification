@@ -309,8 +309,8 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                         intent.putExtra("userid",userId);
                         intent.putExtra("type",type);
                         intent.putExtra("htype",htype);
-                        intent.putExtra("ward",preferences.getString("wardno",""));
-                        intent.putExtra("line",preferences.getString("lineno",""));
+                        intent.putExtra("ward",ward);
+                        intent.putExtra("line",line);
                         intent.putExtra("serail",SerialNo);
                         startActivity(intent);
 

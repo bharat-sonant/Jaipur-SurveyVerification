@@ -1352,8 +1352,8 @@ public class FormPageViewModel extends ViewModel {
 
         Log.e("WardNo","NO"+preferences.getString("wardno", ""));
         Log.e("LineNo","NO"+preferences.getString("lineno", ""));
-        new Repository().sendHousesData(activity, countCheck, currentCardNumber, identityBitmap, houseImage, myPath, newMobiles, housesMap, subhousesMap, bitmaps, markingKey, jsonObject, dataObject, jsonObjectWard, preferences.getString("assignment", ""),
-                preferences.getString("userId", ""), preferences.getString("line", ""), preferences.getString("rfid", ""), preferences.getString("markingRevisit", "no"), currentDate).observeForever(dataSnapshot -> {
+        new Repository().sendHousesData(activity, countCheck, currentCardNumber, identityBitmap, houseImage, myPath, newMobiles, housesMap, subhousesMap, bitmaps, markingKey, jsonObject, dataObject, jsonObjectWard, preferences.getString("wardno", ""),
+                preferences.getString("userId", ""), preferences.getString("lineno", ""), preferences.getString("rfid", ""), preferences.getString("markingRevisit", "no"), currentDate).observeForever(dataSnapshot -> {
 
             if (dataSnapshot.equalsIgnoreCase("success")) {
                 common.closeDialog(activity);
