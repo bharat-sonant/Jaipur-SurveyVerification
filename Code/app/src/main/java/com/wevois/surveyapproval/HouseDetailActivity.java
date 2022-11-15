@@ -91,10 +91,10 @@ public class HouseDetailActivity extends AppCompatActivity {
         }
 
 
-        if (Integer.parseInt(htype) != 1 && Integer.parseInt(htype) != 19) {
-            commercialBtnClick();
-        }else {
+        if(type.equals("आवासीय")) {
             awasiyeBtnClick();
+        }else {
+            commercialBtnClick();
         }
 
         binding.BackBtn.setOnClickListener(new View.OnClickListener() {
@@ -152,7 +152,12 @@ public class HouseDetailActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 if (binding.houseTypeSpinner.getSelectedItemId() != 0) {
 //                    onSaveClick(view);
-                    htype = String.valueOf(binding.houseTypeSpinner.getSelectedItemPosition()+1);
+                    try {
+                        htype = jsonArrayHouseType.get(binding.houseTypeSpinner.getSelectedItemPosition()-1).toString();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+//                    htype = String.valueOf(binding.houseTypeSpinner.getSelectedItemPosition()+1);
                     Log.e("Select house type",htype);
                 }
             }
@@ -196,6 +201,7 @@ public class HouseDetailActivity extends AppCompatActivity {
     }
 
     private void getHouseTypes(Boolean isCommercial) {
+
         houseTypeList.clear();
         houseTypeList.add("Select Entity type");
         JSONObject jsonObject, commercialJsonObject, residentialJsonObject;
@@ -205,7 +211,9 @@ public class HouseDetailActivity extends AppCompatActivity {
             commercialJsonObject = new JSONObject(preferences.getString("commercialHousesTypeList", ""));
             residentialJsonObject = new JSONObject(preferences.getString("residentialHousesTypeList", ""));
 
+            Log.e("housesTypeList",""+jsonObject.toString());
             for (int i = 1; i <= jsonObject.length(); i++) {
+
                 if (isCommercial) {
                     try {
                         houseTypeList.add(commercialJsonObject.getString(String.valueOf(i)));
