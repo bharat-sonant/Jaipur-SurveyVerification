@@ -943,11 +943,11 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                                     int MARKS_COUNT = Integer.parseInt(String.valueOf(currentData.getValue()));
                                     HashMap<String, Object> hM = new HashMap<>();
                                     hM.put("latLng", lastKnownLatLngForWalkingMan.latitude + "," + lastKnownLatLngForWalkingMan.longitude);
-                                    hM.put("VerifierId", userId);
+                                    hM.put("verifierId", userId);
 //                                    hM.put("alreadyInstalled", checkWhichRBisChecked());
                                     hM.put("image", MARKS_COUNT + ".jpg");
                                     hM.put("date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
-                                    hM.put("houseType", houseDataHashMap.get(houseTypeSpinner.getSelectedItem()));
+                                    hM.put("entityType", houseDataHashMap.get(houseTypeSpinner.getSelectedItem()));
 
                                     rootRef.child("SurveyVerifierData/MarkedHousesByVerifier/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT).setValue(hM);
                                     /*rootRef.child("EntityMarkingData/LastScanTime/Surveyor").child(userId).setValue(new SimpleDateFormat("dd MMM HH:mm:ss").format(new Date()));

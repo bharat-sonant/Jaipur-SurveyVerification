@@ -32,10 +32,10 @@ import java.util.List;
 
 public class HouseDetailActivity extends AppCompatActivity {
 
-//    ActivitySubFormPageBinding binding;
+    //    ActivitySubFormPageBinding binding;
     HouseDetailActivityBinding binding;
-    String ward,line,serialNo;
-    String type, name, userid, mobile, address,htype;
+    String ward, line, serialNo;
+    String type, name, userid, mobile, address, htype;
     CommonFunctions common;
     SharedPreferences preferences;
     List<String> houseTypeList = new ArrayList<>();
@@ -85,7 +85,7 @@ public class HouseDetailActivity extends AppCompatActivity {
             if (bundle.containsKey("serail")) {
                 serialNo = bundle.getString("serail");
             }
-            if (bundle.containsKey("htype")){
+            if (bundle.containsKey("htype")) {
                 htype = bundle.getString("htype");
             }
         }
@@ -93,7 +93,7 @@ public class HouseDetailActivity extends AppCompatActivity {
 
         if (Integer.parseInt(htype) != 1 && Integer.parseInt(htype) != 19) {
             commercialBtnClick();
-        }else {
+        } else {
             awasiyeBtnClick();
         }
 
@@ -108,34 +108,47 @@ public class HouseDetailActivity extends AppCompatActivity {
         binding.btnSaveDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                common.setProgressDialog("", "Please Wait", HouseDetailActivity.this, HouseDetailActivity.this);
-                HashMap<String, Object> subhouses = new HashMap<>();
-                subhouses.put("name", name);
-                subhouses.put("VerifierId", userid);
-                subhouses.put("date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
-                subhouses.put("EntityKey", htype);
 
-                runOnUiThread(() -> {
-                    CommonFunctions.getInstance().getDatabaseForApplication(HouseDetailActivity.this).child("SurveyVerifierData/VerifiedHouses/" + preferences.getString("wardno","") + "/" + preferences.getString("lineno","") + "/" + serialNo).updateChildren(subhouses).addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            common.closeDialog(HouseDetailActivity.this);
-                            Log.e("data","save sucess");
-                            showAlertBox("आपका सर्वे पूरा हुआ, धन्यवाद |", true, "survey");
+                if (binding.houseTypeSpinner.getSelectedItemId() != 0) {
+                    common.setProgressDialog("", "Please Wait", HouseDetailActivity.this, HouseDetailActivity.this);
+                    HashMap<String, Object> subhouses = new HashMap<>();
+                    subhouses.put("name", name);
+                    subhouses.put("verifierId", userid);
+                    subhouses.put("date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
+                    subhouses.put("entityType", htype);
+
+                    runOnUiThread(() -> {
+                        CommonFunctions.getInstance().getDatabaseForApplication(HouseDetailActivity.this).child("SurveyVerifierData/VerifiedHouses/" + preferences.getString("wardno", "") + "/" + preferences.getString("lineno", "") + "/" + serialNo).updateChildren(subhouses).addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                common.closeDialog(HouseDetailActivity.this);
+                                Log.e("data", "save sucess");
+                                showAlertBox("आपका सर्वे पूरा हुआ, धन्यवाद |", true, "survey");
 //                            finish();
 //                            removeLocalData("Houses");
 //                            response.setValue(checkAllDataSend("Houses"));
+                            }
+                        });
+
+                        if (binding.radioAwasiye.isChecked()) {
+                            type = "आवासीय";
+                        } else {
+                            type = "व्यावसायिक";
                         }
+
+                        CommonFunctions.getInstance().getDatabaseForApplication(HouseDetailActivity.this).child("Houses/" + ward + "/" + line + "/" + serialNo + "/houseType").setValue(htype);
+                        CommonFunctions.getInstance().getDatabaseForApplication(HouseDetailActivity.this).child("Houses/" + ward + "/" + line + "/" + serialNo + "/cardType").setValue(type);
                     });
-
-                    if (binding.radioAwasiye.isChecked()) {
-                        type = "आवासीय";
-                    } else {
-                        type = "व्यावसायिक";
+                }else {
+                    View selectedView = binding.houseTypeSpinner.getSelectedView();
+                    if (selectedView != null && selectedView instanceof TextView) {
+                        binding.houseTypeSpinner.requestFocus();
+                        TextView selectedTextView = (TextView) selectedView;
+                        selectedTextView.setError("error");
+                        selectedTextView.setTextColor(Color.RED);
+                        selectedTextView.setText("please select entity type");
+                        binding.houseTypeSpinner.performClick();
                     }
-
-                    CommonFunctions.getInstance().getDatabaseForApplication(HouseDetailActivity.this).child("Houses/"+ ward + "/" + line + "/" + serialNo +"/houseType").setValue(htype);
-                    CommonFunctions.getInstance().getDatabaseForApplication(HouseDetailActivity.this).child("Houses/"+ ward + "/" + line + "/" + serialNo +"/cardType").setValue(type);
-                });
+                }
 
             }
         });
@@ -157,7 +170,7 @@ public class HouseDetailActivity extends AppCompatActivity {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    Log.e("Select house type",htype);
+                    Log.e("Select house type", htype);
                 }
             }
 
@@ -193,7 +206,7 @@ public class HouseDetailActivity extends AppCompatActivity {
     public void commercialBtnClick() {
 //        isChecked.set(true);
 //        isCheckedAwasiye.set(false);
-        Log.e("commercialBtnClick","commercialBtnClick"+"");
+        Log.e("commercialBtnClick", "commercialBtnClick" + "");
         binding.radioCom.setChecked(true);
         binding.radioAwasiye.setChecked(false);
         getHouseTypes(true);
@@ -210,7 +223,7 @@ public class HouseDetailActivity extends AppCompatActivity {
             commercialJsonObject = new JSONObject(preferences.getString("commercialHousesTypeList", ""));
             residentialJsonObject = new JSONObject(preferences.getString("residentialHousesTypeList", ""));
 
-            Log.e("housesTypeList",""+jsonObject.toString());
+            Log.e("housesTypeList", "" + jsonObject.toString());
             for (int i = 1; i <= jsonObject.length(); i++) {
 
                 if (isCommercial) {
@@ -262,7 +275,7 @@ public class HouseDetailActivity extends AppCompatActivity {
                     binding.houseTypeSpinner.setSelection(i + 1);
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
     }

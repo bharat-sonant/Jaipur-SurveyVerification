@@ -736,7 +736,7 @@ public class FormPageViewModel extends ViewModel {
         housesMap.put("createdDate", timeFormat.format(new Date()));
         housesMap.put("surveyorId", preferences.getString("userId", ""));
         try {
-            housesMap.put("houseType", jsonArrayHouseType.get(spinnerHouseType.getSelectedItemPosition() - 1).toString());
+            housesMap.put("entityType", jsonArrayHouseType.get(spinnerHouseType.getSelectedItemPosition() - 1).toString());
         } catch (JSONException e) {
         }
         housesMap.put("latLng", "(" + preferences.getString("lat", "") + "," + preferences.getString("lng", "") + ")");
