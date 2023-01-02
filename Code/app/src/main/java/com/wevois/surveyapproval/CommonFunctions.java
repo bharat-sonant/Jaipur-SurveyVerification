@@ -411,6 +411,9 @@ public class CommonFunctions {
             case "Jaipur-Malviyanagar":
                 path = "https://jaipur-malviyanagar.firebaseio.com/";
                 break;
+            case "Jaipur-Murlipura":
+                path = "https://jaipur-murlipura.firebaseio.com/";
+                break;
             case "Behror":
                 path = "https://dtdbehror.firebaseio.com/";
                 break;

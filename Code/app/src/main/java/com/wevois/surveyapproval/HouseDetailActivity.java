@@ -12,12 +12,18 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.databinding.DataBindingUtil;
 
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
+import com.google.firebase.database.ValueEventListener;
 import com.wevois.surveyapproval.databinding.HouseDetailActivityBinding;
 
 import org.json.JSONArray;
@@ -41,6 +47,7 @@ public class HouseDetailActivity extends AppCompatActivity {
     List<String> houseTypeList = new ArrayList<>();
     JSONArray jsonArrayHouseType = new JSONArray();
     AlertDialog saveAlertBox;
+    String markingKey, cardNumber;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -118,16 +125,47 @@ public class HouseDetailActivity extends AppCompatActivity {
                     subhouses.put("entityType", htype);
 
                     runOnUiThread(() -> {
+
+                        CommonFunctions.getInstance().getDatabaseForApplication(HouseDetailActivity.this).child("EntityMarkingData/MarkedHouses/" + preferences.getString("wardno", "") + "/" + preferences.getString("lineno", "")).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                common.closeDialog(HouseDetailActivity.this);
+                                if (dataSnapshot.getValue() != null) {
+                                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+//                                        Log.e("data snapshot", snapshot.toString());
+                                        if (snapshot.hasChild("cardNumber")) {
+                                            cardNumber = snapshot.child("cardNumber").getValue().toString();
+                                            if (serialNo.equals(snapshot.child("cardNumber").getValue().toString())) {
+                                                markingKey = snapshot.getKey();
+//                                                Log.e("mark key ","key "+markingKey);
+                                                CommonFunctions.getInstance().getDatabaseForApplication(HouseDetailActivity.this).child("EntityMarkingData/MarkedHouses/" + ward + "/" + line + "/" + markingKey + "/houseType").setValue(htype);
+                                                break;
+                                            }
+
+                                        }
+                                    }
+                                    Log.e("CardNumber", cardNumber + " " + markingKey);
+
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+
+                            }
+
+                        });
                         CommonFunctions.getInstance().getDatabaseForApplication(HouseDetailActivity.this).child("SurveyVerifierData/VerifiedHouses/" + preferences.getString("wardno", "") + "/" + preferences.getString("lineno", "") + "/" + serialNo).updateChildren(subhouses).addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
                                 common.closeDialog(HouseDetailActivity.this);
                                 Log.e("data", "save sucess");
                                 showAlertBox("आपका सर्वे पूरा हुआ, धन्यवाद |", true, "survey");
-//                            finish();
+//                                finish();
 //                            removeLocalData("Houses");
 //                            response.setValue(checkAllDataSend("Houses"));
                             }
                         });
+
 
                         if (binding.radioAwasiye.isChecked()) {
                             type = "आवासीय";
@@ -138,7 +176,7 @@ public class HouseDetailActivity extends AppCompatActivity {
                         CommonFunctions.getInstance().getDatabaseForApplication(HouseDetailActivity.this).child("Houses/" + ward + "/" + line + "/" + serialNo + "/houseType").setValue(htype);
                         CommonFunctions.getInstance().getDatabaseForApplication(HouseDetailActivity.this).child("Houses/" + ward + "/" + line + "/" + serialNo + "/cardType").setValue(type);
                     });
-                }else {
+                } else {
                     View selectedView = binding.houseTypeSpinner.getSelectedView();
                     if (selectedView != null && selectedView instanceof TextView) {
                         binding.houseTypeSpinner.requestFocus();

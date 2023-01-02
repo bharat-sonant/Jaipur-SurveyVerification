@@ -275,7 +275,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="45dp"
                 android:layout_marginLeft="10dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginRight="10dp"
                 android:background="@drawable/backgroundboundari"
                 android:overlapAnchor="false"
@@ -283,6 +283,7 @@
                 android:paddingRight="20dp"
                 android:spinnerMode="dropdown"
                 app:layout_constraintEnd_toEndOf="@+id/radioGroup"
+                app:layout_constraintHorizontal_bias="1.0"
                 app:layout_constraintStart_toStartOf="@+id/radioGroup"
                 app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
 

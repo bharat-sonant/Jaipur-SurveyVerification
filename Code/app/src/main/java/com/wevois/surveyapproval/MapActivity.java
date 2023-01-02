@@ -23,6 +23,7 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -150,6 +151,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
     private boolean btnInventorying = false;
     JSONObject scanDataObject;
     LinearLayout bottomLnyrLayout;
+    String lati, lngi;
 
     private Runnable inventoryRunnable = new Runnable() {
         @Override
@@ -256,23 +258,23 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
 
     private void getHouseLineDetails(String SerialNo) {
 //        preferences.edit().putString(SerialNo,"cardNo").apply();
-        common.setProgressDialog("Please Wait..", "",this, this);
-        rootRef.child("CardWardMapping/"+SerialNo).addListenerForSingleValueEvent(new ValueEventListener() {
+        common.setProgressDialog("Please Wait..", "", this, this);
+        rootRef.child("CardWardMapping/" + SerialNo).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.getValue() != null) {
                     if (dataSnapshot.hasChild("line")) {
-                        Log.e("Line No",dataSnapshot.child("line").getValue().toString());
+                        Log.e("Line No", dataSnapshot.child("line").getValue().toString());
                         String lineno = dataSnapshot.child("line").getValue().toString();
                         String wardno = dataSnapshot.child("ward").getValue().toString();
-                        getHouseDetails(lineno,wardno,SerialNo);
+                        getHouseDetails(lineno, wardno, SerialNo);
                     }
-                }else {
+                } else {
                     common.closeDialog(MapActivity.this);
 //                    preferences.edit().putString(SerialNo,"cardNo").apply();
                     preferences.edit().putString("cardNo", "" + SerialNo).commit();
-                    Log.e("Seriallllll",preferences.getString("cardNo",""));
-                    Intent intent = new Intent(MapActivity.this,FormPageActivity.class);
+                    Log.e("Seriallllll", preferences.getString("cardNo", ""));
+                    Intent intent = new Intent(MapActivity.this, FormPageActivity.class);
                     intent.putExtra("from", "map");
                     startActivity(intent);
 
@@ -286,15 +288,15 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
         });
     }
 
-    private void getHouseDetails(String line,String ward, String SerialNo) {
-        common.setProgressDialog("Please Wait..", "",this, this);
-        rootRef.child("Houses/"+ward+"/"+line+"/"+SerialNo).addListenerForSingleValueEvent(new ValueEventListener() {
+    private void getHouseDetails(String line, String ward, String SerialNo) {
+        common.setProgressDialog("Please Wait..", "", this, this);
+        rootRef.child("Houses/" + ward + "/" + line + "/" + SerialNo).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.getValue() != null) {
                     if (dataSnapshot.hasChild("name")) {
                         common.closeDialog(MapActivity.this);
-                        Log.e("Name",dataSnapshot.child("name").getValue().toString());
+                        Log.e("Name", dataSnapshot.child("name").getValue().toString());
                         String name = dataSnapshot.child("name").getValue().toString();
                         String address = dataSnapshot.child("address").getValue().toString();
                         String mobile = dataSnapshot.child("mobile").getValue().toString();
@@ -303,15 +305,15 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                         String ward = dataSnapshot.child("ward").getValue().toString();
                         Intent intent = new Intent(MapActivity.this, HouseDetailActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        intent.putExtra("name",name);
-                        intent.putExtra("address",address);
-                        intent.putExtra("mobile",mobile);
-                        intent.putExtra("userid",userId);
-                        intent.putExtra("type",type);
-                        intent.putExtra("htype",htype);
-                        intent.putExtra("ward",ward);
-                        intent.putExtra("line",line);
-                        intent.putExtra("serail",SerialNo);
+                        intent.putExtra("name", name);
+                        intent.putExtra("address", address);
+                        intent.putExtra("mobile", mobile);
+                        intent.putExtra("userid", userId);
+                        intent.putExtra("type", type);
+                        intent.putExtra("htype", htype);
+                        intent.putExtra("ward", ward);
+                        intent.putExtra("line", line);
+                        intent.putExtra("serail", SerialNo);
                         startActivity(intent);
 
                     }
@@ -362,10 +364,27 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
             public void onClick(View view) {
                 if (bottomLnyrLayout.getVisibility() == View.VISIBLE) {
                     bottomLnyrLayout.setVisibility(View.GONE);
-                }else {
+                } else {
                     bottomLnyrLayout.setVisibility(View.VISIBLE);
                 }
             }
+        });
+
+        findViewById(R.id.path).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+//                String lat = String.valueOf(scanDataObject.getJSONArray(0).getDouble(0));
+//                String lon = String.valueOf(scanDataObject.getJSONArray(0).getDouble(1));
+                double latii = dbColl.get(0).get(0).latitude;
+                double lngii = dbColl.get(0).get(0).longitude;
+                Log.e("latii",latii+" lngii "+lngii);
+                Log.e("lati",lati+" lngi "+lngi);
+                Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latii + "," + lngii);
+                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                mapIntent.setPackage("com.google.android.apps.maps");
+                startActivity(mapIntent);
+            }
+
         });
         getFileDownload();
     }
@@ -713,6 +732,9 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                             try {
                                 double lat = latLngPointJSONArray.getJSONArray(a).getDouble(0);
                                 double lng = latLngPointJSONArray.getJSONArray(a).getDouble(1);
+                                Log.e("latitude",lat+" logitude "+lng);
+                                lati = String.valueOf(latLngPointJSONArray.getJSONArray(0).getDouble(0));
+                                lngi = String.valueOf(latLngPointJSONArray.getJSONArray(0).getDouble(1));
                                 tempList.add(new LatLng(lat, lng));
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -973,7 +995,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                                     ByteArrayOutputStream toUpload = new ByteArrayOutputStream();
                                     Bitmap.createScaledBitmap(photo, 400, 600, false)
                                             .compress(Bitmap.CompressFormat.JPEG, 80, toUpload);
-                                    FirebaseStorage.getInstance().getReferenceFromUrl(""+common.getDatabaseStoragePath(MapActivity.this))
+                                    FirebaseStorage.getInstance().getReferenceFromUrl("" + common.getDatabaseStoragePath(MapActivity.this))
                                             .child("SurveyVerifierData/MarkedHousesByVerifierImages/" + selectedWard + "/" + (currentLineNumber + 1) + "/" + MARKS_COUNT + ".jpg")
                                             .putBytes(toUpload.toByteArray())
                                             .addOnSuccessListener((UploadTask.TaskSnapshot taskSnapshot) -> {
@@ -1069,10 +1091,10 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
         boolToInstantiateMovingMarker = true;
         currentLineTv.setText("" + (currentLineNumber + 1) + " / " + dbColl.size());
         preferences.edit().putString("lineno", "" + (currentLineNumber + 1)).commit();
-        preferences.edit().putString("wardno",selectedWard).commit();
+        preferences.edit().putString("wardno", selectedWard).commit();
         String line = preferences.getString("lineno", "");
         String ward = preferences.getString("wardno", "");
-        Log.e("ward_line",ward+" "+line);
+        Log.e("ward_line", ward + " " + line);
         drawAllLine();
         mMap.addPolyline(new PolylineOptions().addAll(dbColl.get(currentLineNumber))
                 .endCap(new CustomCap(BitmapDescriptorFactory.fromResource(R.drawable.upper60), 30))
@@ -1808,7 +1830,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
     }
 
     private void checkVersionForTheApplication() {
-        rootRef.child("Settings/LatestVersions/entityMarking").addListenerForSingleValueEvent(new ValueEventListener() {
+        rootRef.child("Settings/LatestVersions/verificationSurvey").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.getValue() != null) {

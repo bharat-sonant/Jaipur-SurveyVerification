@@ -40,10 +40,12 @@
         <entry key="..\:/Office Project/SurveyApprovalApp/SurveyApproval/Code/app/src/main/res/layout/parisar_listdata_layout.xml" value="0.2" />
         <entry key="..\:/Office Project/SurveyApprovalApp/SurveyApproval/Code/app/src/main/res/menu/ble_last_device.xml" value="0.1962962962962963" />
         <entry key="..\:/Office Project/SurveyApprovalApp/SurveyApproval/Code/app/src/main/res/menu/ble_reader.xml" value="0.25416666666666665" />
+        <entry key="..\:/Office Project/SurveyVerificationApp/SurveyVerification/Code/app/src/main/res/drawable/ic_path_box.xml" value="0.1795" />
         <entry key="..\:/Office Project/SurveyVerificationApp/SurveyVerification/Code/app/src/main/res/layout/activity_form_page.xml" value="0.12360688956433637" />
         <entry key="..\:/Office Project/SurveyVerificationApp/SurveyVerification/Code/app/src/main/res/layout/activity_main.xml" value="0.12360688956433637" />
         <entry key="..\:/Office Project/SurveyVerificationApp/SurveyVerification/Code/app/src/main/res/layout/activity_map.xml" value="0.11302083333333333" />
         <entry key="..\:/Office Project/SurveyVerificationApp/SurveyVerification/Code/app/src/main/res/layout/house_detail_activity.xml" value="0.12360688956433637" />
+        <entry key="..\:/Office Project/SurveyVerificationApp/SurveyVerification/Code/app/src/main/res/layout/spinner_custom_textcolor.xml" value="0.253125" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/border.xml" value="0.19537037037037036" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/bordergreen.xml" value="0.19537037037037036" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/drawable/cam_icon.xml" value="0.1962962962962963" />
@@ -64,6 +66,8 @@
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/layout/form_dialog_for_rejected_marker.xml" value="0.21041666666666667" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/layout/move_to_line_view.xml" value="0.21041666666666667" />
         <entry key="..\:/Office-Work/Projects/EntityMarking/Code/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.1925925925925926" />
+        <entry key="..\:/Office_AndroidNativeProject/SurveyVerificationApp/SurveyVerification/Code/app/src/main/res/layout/activity_login.xml" value="0.25416666666666665" />
+        <entry key="..\:/Office_AndroidNativeProject/SurveyVerificationApp/SurveyVerification/Code/app/src/main/res/layout/activity_map.xml" value="0.25416666666666665" />
         <entry key="..\:/Projects/EntityMarkingApp/Code/app/src/main/res/layout/activity_main.xml" value="0.24003623188405798" />
         <entry key="..\:/Projects/EntityMarkingApp/Code/app/src/main/res/layout/activity_map.xml" value="0.16576086956521738" />
         <entry key="..\:/Projects/EntityMarkingApp/Code/app/src/main/res/layout/move_to_line_view.xml" value="0.25416666666666665" />

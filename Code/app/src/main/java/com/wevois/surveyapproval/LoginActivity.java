@@ -51,9 +51,9 @@ public class LoginActivity extends AppCompatActivity {
 
     private void setPageTitle() {
         findViewById(R.id.screen_title).setOnLongClickListener(view -> {
-            preferences.edit().putString("dbPath", "https://dtdnavigatortesting.firebaseio.com/").apply();
+            preferences.edit().putString("dbPath", "https://jaipur-malviyanagar.firebaseio.com/").apply();
 //            preferences.edit().putString("dbPath", "https://dtdreengus.firebaseio.com/").apply();
-            preferences.edit().putString("storagePath", "gs://dtdnavigator.appspot.com/Test/").apply();
+            preferences.edit().putString("storagePath", "gs://dtdnavigator.appspot.com/Jaipur-Malviyanagar").apply();
 //            preferences.edit().putString("storagePath", "Reengus").apply();
             rootRef = common.getDatabaseRef(LoginActivity.this);
             common.showAlertBox("Testing Mode Enabled", "Ok", "", LoginActivity.this);
@@ -109,6 +109,7 @@ public class LoginActivity extends AppCompatActivity {
         if (isPass) {
             isPass = false;
             common.setProgressDialog("Please Wait", "", LoginActivity.this, LoginActivity.this);
+            Log.e("root ref",rootRef+"");
             rootRef.child("EntityMarkingData/MarkerAppAccess/").child(userId)
                     .addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
