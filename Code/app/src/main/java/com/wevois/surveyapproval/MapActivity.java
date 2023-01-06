@@ -149,7 +149,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
     private String sn = "";
     private boolean inventorying = false;
     private boolean btnInventorying = false;
-    JSONObject scanDataObject;
+    JSONObject scanDataObject = new JSONObject();
     LinearLayout bottomLnyrLayout;
     String lati, lngi;
 
@@ -163,6 +163,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                         inventorying = true;
                         try {
                             String rfid = ByteUtils.epcBytes2Hex(epcReply.getEpc());
+//                            String rfid = "E28069950000400EED15CDC6";
                             if (scanDataObject.has(rfid)) {
                                 JSONArray jsonArray = scanDataObject.getJSONArray(rfid);
                                 String serialNo = jsonArray.get(0).toString();
@@ -258,7 +259,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
 
     private void getHouseLineDetails(String SerialNo) {
 //        preferences.edit().putString(SerialNo,"cardNo").apply();
-        common.setProgressDialog("Please Wait..", "", this, this);
+        common.setProgressDialog("Please Wait.....", "", this, this);
         rootRef.child("CardWardMapping/" + SerialNo).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -273,8 +274,11 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                     common.closeDialog(MapActivity.this);
 //                    preferences.edit().putString(SerialNo,"cardNo").apply();
                     preferences.edit().putString("cardNo", "" + SerialNo).commit();
+                    preferences.edit().putString("lat", "" + lastKnownLatLngForWalkingMan.latitude).commit();
+                    preferences.edit().putString("lng", "" + lastKnownLatLngForWalkingMan.longitude).commit();
                     Log.e("Seriallllll", preferences.getString("cardNo", ""));
                     Intent intent = new Intent(MapActivity.this, FormPageActivity.class);
+
                     intent.putExtra("from", "map");
                     startActivity(intent);
 
@@ -387,6 +391,28 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
 
         });
         getFileDownload();
+//        getHouseLineDetails("MNZ187382");
+        rootRef.child("SurveyVerifierData/LastCompletedLines/" + selectedWard + "/" + (userId)).child("lastMarkerLine")
+                .runTransaction(new Transaction.Handler() {
+
+                    @NonNull
+                    @Override
+                    public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                        if (currentData.getValue() == null) {
+                            currentData.setValue(1);
+                            currentLineNumber = 0;
+                        } else {
+//                            currentData.setValue(String.valueOf((Integer.parseInt(currentData.getValue().toString()) + 1)));
+                            currentLineNumber = Integer.parseInt(currentData.getValue().toString()) - 1;
+                        }
+                        return Transaction.success(currentData);
+                    }
+
+                    @Override
+                    public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+
+                    }
+                });
     }
 
     @RequiresApi(api = Build.VERSION_CODES.P)
@@ -435,7 +461,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                 result.append(str);
             }*/
 
-            Log.e("json file", String.valueOf(preferences.getString(file, "")));
+//            Log.e("json file", String.valueOf(preferences.getString(file, "")));
             scanDataObject = new JSONObject(String.valueOf(preferences.getString(file, "")));
 
         } catch (Exception ignored) {
@@ -732,7 +758,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                             try {
                                 double lat = latLngPointJSONArray.getJSONArray(a).getDouble(0);
                                 double lng = latLngPointJSONArray.getJSONArray(a).getDouble(1);
-                                Log.e("latitude",lat+" logitude "+lng);
+//                                Log.e("latitude",lat+" logitude "+lng);
                                 lati = String.valueOf(latLngPointJSONArray.getJSONArray(0).getDouble(0));
                                 lngi = String.valueOf(latLngPointJSONArray.getJSONArray(0).getDouble(1));
                                 tempList.add(new LatLng(lat, lng));
@@ -1089,13 +1115,13 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
     private void drawLine() {
         mMap.clear();
         boolToInstantiateMovingMarker = true;
+        drawAllLine();
         currentLineTv.setText("" + (currentLineNumber + 1) + " / " + dbColl.size());
-        preferences.edit().putString("lineno", "" + (currentLineNumber + 1)).commit();
+        preferences.edit().putString("lineno", "" + (currentLineNumber +1)).commit();
         preferences.edit().putString("wardno", selectedWard).commit();
         String line = preferences.getString("lineno", "");
         String ward = preferences.getString("wardno", "");
         Log.e("ward_line", ward + " " + line);
-        drawAllLine();
         mMap.addPolyline(new PolylineOptions().addAll(dbColl.get(currentLineNumber))
                 .endCap(new CustomCap(BitmapDescriptorFactory.fromResource(R.drawable.upper60), 30))
                 .startCap(new CustomCap(BitmapDescriptorFactory.fromResource(R.drawable.start50), 30))
@@ -1332,6 +1358,25 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                         currentLineNumber++;
                         drawLine();
                         fetchMarkerForLine(true);
+                        rootRef.child("SurveyVerifierData/LastCompletedLines/" + selectedWard + "/" + (userId)).child("lastMarkerLine")
+                                .runTransaction(new Transaction.Handler() {
+
+                                    @NonNull
+                                    @Override
+                                    public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                        if (currentData.getValue() == null) {
+                                            currentData.setValue(1);
+                                        } else {
+                                            currentData.setValue(String.valueOf((Integer.parseInt(currentData.getValue().toString()) + 1)));
+                                        }
+                                        return Transaction.success(currentData);
+                                    }
+
+                                    @Override
+                                    public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+
+                                    }
+                                });
                     } else {
                         common.closeDialog(MapActivity.this);
                         common.showAlertBox("Please Connect to internet", "Ok", "", MapActivity.this);
@@ -1361,7 +1406,8 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
 
     @SuppressLint("StaticFieldLeak")
     public void onPrevClick(View view) {
-        if ((currentLineNumber - 1) >= 0 && (currentLineNumber - 1) < dbColl.size()) {
+        Log.e("dbColl",dbColl.size()+"");
+        if ((currentLineNumber) > 0 && (currentLineNumber) < dbColl.size()) {
             new AsyncTask<Void, Void, Boolean>() {
                 @Override
                 protected void onPreExecute() {
@@ -1380,6 +1426,25 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                         currentLineNumber--;
                         drawLine();
                         fetchMarkerForLine(true);
+                        rootRef.child("SurveyVerifierData/LastCompletedLines/" + selectedWard + "/" + (userId)).child("lastMarkerLine")
+                                .runTransaction(new Transaction.Handler() {
+
+                                    @NonNull
+                                    @Override
+                                    public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                        if (currentData.getValue() == null) {
+                                            currentData.setValue(1);
+                                        } else {
+                                            currentData.setValue(String.valueOf((Integer.parseInt(currentData.getValue().toString()) - 1)));
+                                        }
+                                        return Transaction.success(currentData);
+                                    }
+
+                                    @Override
+                                    public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+
+                                    }
+                                });
                     } else {
                         common.closeDialog(MapActivity.this);
                         common.showAlertBox("Please Connect to internet", "Ok", "", MapActivity.this);
@@ -1410,7 +1475,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
         super.onDestroy();
         removeListeners();
 
-        if (reader.isConnected()) {
+        /*if (reader.isConnected()) {
             if (inventorying) {
                 mHandler.removeCallbacks(inventoryRunnable);
                 inventorying = false;
@@ -1422,7 +1487,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
         }
         if (reader.isConnected()) {
             reader.disconnect();
-        }
+        }*/
     }
 
     private void removeListeners() {
@@ -1466,6 +1531,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
 
     @SuppressLint("StaticFieldLeak")
     private void dialogForMoveToLine() {
+
         try {
             View dialogLayout = MapActivity.this.getLayoutInflater().inflate(R.layout.move_to_line_view, null);
             AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapActivity.this).setView(dialogLayout).setCancelable(false);

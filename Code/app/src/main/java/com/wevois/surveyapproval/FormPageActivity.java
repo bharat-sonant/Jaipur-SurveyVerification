@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FormPageActivity extends AppCompatActivity {
+
     private static final int REQUEST_CODE = 101;
     ActivityFormPageBinding binding;
     FormPageViewModel viewModel;
@@ -60,6 +61,7 @@ public class FormPageActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_form_page);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_form_page);
         viewModel = ViewModelProviders.of(this).get(FormPageViewModel.class);
@@ -125,7 +127,7 @@ public class FormPageActivity extends AppCompatActivity {
                 String house_count = binding.etTotalHouse.getText().toString();
                 int count = Integer.parseInt(house_count);
                 if (count > list.size()) {
-                    Intent intent = new Intent(FormPageActivity.this, HouseDetailActivity.class);
+                    Intent intent = new Intent(FormPageActivity.this, SubFormPageActivity.class);
                     intent.putExtra("pos", "1");
                     intent.putExtra("type", "add");
                     startActivityForResult(intent, REQUEST_CODE);
@@ -343,7 +345,7 @@ public class FormPageActivity extends AppCompatActivity {
 //                            isVisible.set(true);
                             binding.etTotalHouse.setVisibility(View.VISIBLE);
                             binding.rcyParisarData.setVisibility(View.VISIBLE);
-                            binding.addMoreRow.setVisibility(View.VISIBLE);
+                            binding.addMoreRow.setVisibility(View.GONE);
 //                            rcy_parisar_data.setVisibility(View.VISIBLE);
                             break;
                         case 20:
@@ -351,7 +353,7 @@ public class FormPageActivity extends AppCompatActivity {
 //                            isVisible.set(true);
                             binding.etTotalHouse.setVisibility(View.VISIBLE);
                             binding.rcyParisarData.setVisibility(View.VISIBLE);
-                            binding.addMoreRow.setVisibility(View.VISIBLE);
+                            binding.addMoreRow.setVisibility(View.GONE);
 //                            rcy_parisar_data.setVisibility(View.VISIBLE);
                             break;
                         default:

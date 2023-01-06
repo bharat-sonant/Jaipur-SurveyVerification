@@ -905,14 +905,14 @@ public class FormPageViewModel extends ViewModel {
 //                            hintText = "Enter No of Houses";
                             isVisible.set(true);
                             rcy_parisar_data.setVisibility(View.VISIBLE);
-                            addMoreRow.setVisibility(View.VISIBLE);
+                            addMoreRow.setVisibility(View.GONE);
 //                            rcy_parisar_data.setVisibility(View.VISIBLE);
                             break;
                         case 20:
 //                            hintText = "Enter No of Shops";
                             isVisible.set(true);
                             rcy_parisar_data.setVisibility(View.VISIBLE);
-                            addMoreRow.setVisibility(View.VISIBLE);
+                            addMoreRow.setVisibility(View.GONE);
 //                            rcy_parisar_data.setVisibility(View.VISIBLE);
                             break;
                         default:
@@ -1314,7 +1314,7 @@ public class FormPageViewModel extends ViewModel {
         } catch (JSONException e) {
         }
         housesMap.put("latLng", "(" + preferences.getString("lat", "") + "," + preferences.getString("lng", "") + ")");
-        housesMap.put("line", preferences.getString("line", ""));
+        housesMap.put("line", preferences.getString("lineno", ""));
         housesMap.put("name", userTv.get());
         housesMap.put("mobile", mobile);
         if (isCheckedAwasiye.get()) {
@@ -1323,7 +1323,7 @@ public class FormPageViewModel extends ViewModel {
             housesMap.put("cardType", "व्यावसायिक");
         }
         housesMap.put("rfid", preferences.getString("rfid", ""));
-        housesMap.put("ward", preferences.getString("ward", ""));
+        housesMap.put("ward", preferences.getString("wardno", ""));
         housesMap.put("cardImage", currentCardNumber + ".jpg");
         housesMap.put("houseImage", currentCardNumber + "House" + ".jpg");
         housesMap.put("servingCount", house_count);
