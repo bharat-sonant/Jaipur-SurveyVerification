@@ -210,8 +210,8 @@
                         android:id="@+id/img_house"
                         android:layout_width="100dp"
                         android:layout_height="50dp"
-                        android:layout_alignParentRight="true"
-                        android:layout_marginLeft="20sp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_marginStart="20sp"
                         android:scaleType="fitXY"/>
 
                 </RelativeLayout>
@@ -390,6 +390,7 @@
                         android:id="@+id/button_image_revisit"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
+                        android:layout_marginEnd="10dp"
                         android:background="@drawable/camerabutton"
                         android:onClick="@{()->formpageviewmodel.saveRevisitImage()}"
                         android:textAllCaps="false" />
@@ -408,6 +409,7 @@
                     <View
                         android:layout_width="10dp"
                         android:layout_height="match_parent" />
+
                 </LinearLayout>
 
                 <RadioGroup
@@ -442,6 +444,7 @@
                         android:onClick="@{()->formpageviewmodel.commercialButtonCardRevisitClick()}"
                         android:text="@string/business"
                         android:textSize="18sp" />
+
                 </RadioGroup>
 
                 <Spinner

@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-        setDatabase("Jaipur-Malviyanagar");
+        setDatabase("Jaipur-Murlipura");
     }
 
     @SuppressLint("StaticFieldLeak")

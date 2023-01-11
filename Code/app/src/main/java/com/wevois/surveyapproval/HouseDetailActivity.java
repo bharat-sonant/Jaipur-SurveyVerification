@@ -21,8 +21,7 @@ import androidx.databinding.DataBindingUtil;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.MutableData;
-import com.google.firebase.database.Transaction;
+
 import com.google.firebase.database.ValueEventListener;
 import com.wevois.surveyapproval.databinding.HouseDetailActivityBinding;
 
@@ -38,10 +37,10 @@ import java.util.List;
 
 public class HouseDetailActivity extends AppCompatActivity {
 
-    //    ActivitySubFormPageBinding binding;
+    //ActivitySubFormPageBinding binding;
     HouseDetailActivityBinding binding;
     String ward, line, serialNo;
-    String type, name, userid, mobile, address, htype;
+    String type, name, userid, mobile, address, htype, latLng;
     CommonFunctions common;
     SharedPreferences preferences;
     List<String> houseTypeList = new ArrayList<>();
@@ -95,6 +94,9 @@ public class HouseDetailActivity extends AppCompatActivity {
             if (bundle.containsKey("htype")) {
                 htype = bundle.getString("htype");
             }
+            if (bundle.containsKey("latLng")) {
+                latLng = bundle.getString("latLng");
+            }
         }
 
 
@@ -123,6 +125,7 @@ public class HouseDetailActivity extends AppCompatActivity {
                     subhouses.put("verifierId", userid);
                     subhouses.put("date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
                     subhouses.put("entityType", htype);
+                    subhouses.put("latLng",latLng);
 
                     runOnUiThread(() -> {
 

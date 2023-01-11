@@ -163,7 +163,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                         inventorying = true;
                         try {
                             String rfid = ByteUtils.epcBytes2Hex(epcReply.getEpc());
-//                            String rfid = "E28069950000400EED15CDC6";
+//                            String rfid = "E2806995000040078475E69A";
                             if (scanDataObject.has(rfid)) {
                                 JSONArray jsonArray = scanDataObject.getJSONArray(rfid);
                                 String serialNo = jsonArray.get(0).toString();
@@ -307,6 +307,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                         String type = dataSnapshot.child("cardType").getValue().toString();
                         String htype = dataSnapshot.child("houseType").getValue().toString();
                         String ward = dataSnapshot.child("ward").getValue().toString();
+                        String latLng = lastKnownLatLngForWalkingMan.latitude +","+lastKnownLatLngForWalkingMan.longitude;
                         Intent intent = new Intent(MapActivity.this, HouseDetailActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         intent.putExtra("name", name);
@@ -318,6 +319,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                         intent.putExtra("ward", ward);
                         intent.putExtra("line", line);
                         intent.putExtra("serail", SerialNo);
+                        intent.putExtra("latLng",latLng);
                         startActivity(intent);
 
                     }
@@ -387,6 +389,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                 mapIntent.setPackage("com.google.android.apps.maps");
                 startActivity(mapIntent);
+//                getHouseLineDetails("MNZ104909");
             }
 
         });
@@ -413,6 +416,7 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
 
                     }
                 });
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.P)
@@ -1563,6 +1567,25 @@ public class MapActivity extends BleBaseActivity implements OnMapReadyCallback {
                                             currentLineNumber = lineNumber - 1;
                                             drawLine();
                                             fetchMarkerForLine(true);
+                                            rootRef.child("SurveyVerifierData/LastCompletedLines/" + selectedWard + "/" + (userId)).child("lastMarkerLine")
+                                                    .runTransaction(new Transaction.Handler() {
+
+                                                        @NonNull
+                                                        @Override
+                                                        public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                                                            if (currentData.getValue() == null) {
+                                                                currentData.setValue(1);
+                                                            } else {
+                                                                currentData.setValue(String.valueOf(currentLineNumber + 1));
+                                                            }
+                                                            return Transaction.success(currentData);
+                                                        }
+
+                                                        @Override
+                                                        public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
+
+                                                        }
+                                                    });
                                         } else {
                                             common.closeDialog(MapActivity.this);
                                             common.showAlertBox("Please Connect to internet", "Ok", "", MapActivity.this);

@@ -3,9 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-
         <import type="android.view.View" />
-
         <variable
             name="formpageviewmodel"
             type="com.wevois.surveyapproval.SubFormPageActivity" />
@@ -154,7 +152,6 @@
                 android:textColor="@color/white"
                 android:textSize="17sp"
                 app:layout_constraintTop_toBottomOf="@id/img_house" />
-
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
